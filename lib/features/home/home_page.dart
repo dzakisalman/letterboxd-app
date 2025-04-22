@@ -6,6 +6,9 @@ import 'package:letterboxd/features/home/controllers/home_controller.dart';
 import 'package:letterboxd/features/sidebar/drawer_menu.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:letterboxd/routes/app_routes.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:letterboxd/core/widgets/custom_bottom_nav.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -16,81 +19,362 @@ class HomePage extends StatelessWidget {
     final authController = Get.find<AuthController>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF14181C),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          'Hello, ${authController.currentUser?.username ?? 'Guest'}!',
-          style: const TextStyle(color: Colors.white),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              // TODO: Implement search
-            },
-          ),
-        ],
-      ),
+      backgroundColor: const Color(0xFF1F1D36),
       drawer: const DrawerMenu(),
       body: Obx(() {
         if (homeController.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        return SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Popular Films This Month',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+        return SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header Section
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: SvgPicture.asset(
+                          'assets/icons/sidebar.svg',
+                          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                        ),
+                        onPressed: () {
+                          Scaffold.of(context).openDrawer();
+                        },
+                      ),
+                      const Spacer(),
+                      // IconButton(
+                      //   icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                      //   onPressed: () {
+                      //     // TODO: Implement notifications
+                      //   },
+                      // ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () {
+                          Get.toNamed(AppRoutes.profile);
+                        },
+                        child: CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.grey[800],
+                          child: Text(
+                            authController.currentUser?.username.substring(0, 1).toUpperCase() ?? 'G',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              SizedBox(
-                height: 200,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: homeController.popularMovies.length,
-                  itemBuilder: (context, index) {
-                    return _MovieCard(movie: homeController.popularMovies[index]);
-                  },
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Trending Now',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+
+                // Welcome Text
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'Hello, ',
+                              style: GoogleFonts.openSans(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            TextSpan(
+                              text: '${authController.currentUser?.username ?? 'Guest'}!',
+                              style: GoogleFonts.openSans(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFFE9A6A6),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Review or track film you\'ve watched...',
+                        style: GoogleFonts.openSans(
+                          fontSize: 14,
+                          color: Colors.grey[400],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              SizedBox(
-                height: 200,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: homeController.trendingMovies.length,
-                  itemBuilder: (context, index) {
-                    return _MovieCard(movie: homeController.trendingMovies[index]);
-                  },
+
+                const SizedBox(height: 32),
+
+                // Popular Films Section
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    'Popular Films This Month',
+                    style: GoogleFonts.openSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 141,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    itemCount: homeController.popularMovies.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 16),
+                        child: _MovieCard(movie: homeController.popularMovies[index]),
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // // Popular Lists Section
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(horizontal: 24),
+                //   child: Text(
+                //     'Popular Lists This Month',
+                //     style: GoogleFonts.openSans(
+                //       fontSize: 18,
+                //       fontWeight: FontWeight.bold,
+                //       color: Colors.white,
+                //     ),
+                //   ),
+                // ),
+                // const SizedBox(height: 16),
+                // SizedBox(
+                //   height: 200,
+                //   child: Obx(() => ListView.builder(
+                //     scrollDirection: Axis.horizontal,
+                //     padding: const EdgeInsets.symmetric(horizontal: 24),
+                //     itemCount: homeController.popularLists.length,
+                //     itemBuilder: (context, index) {
+                //       final list = homeController.popularLists[index];
+                //       return _ListCard(
+                //         title: list['title'],
+                //         author: list['author'],
+                //         posterPath: list['posterPath'],
+                //       );
+                //     },
+                //   )),
+                // ),
+
+                const SizedBox(height: 32),
+
+                // Recent Friends' Review Section
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    'Recent Reviews',
+                    style: GoogleFonts.openSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Obx(() => ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: homeController.recentReviews.length,
+                    itemBuilder: (context, index) {
+                      final review = homeController.recentReviews[index];
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 24),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE9A6A6).withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Profile Photo
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: Colors.grey[800],
+                              child: review['avatarUrl'] != null
+                                ? ClipOval(
+                                    child: CachedNetworkImage(
+                                      imageUrl: review['avatarUrl']!,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) => const Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                      errorWidget: (context, url, error) => Text(
+                                        review['author'][0].toUpperCase(),
+                                        style: GoogleFonts.openSans(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    review['author'][0].toUpperCase(),
+                                    style: GoogleFonts.openSans(
+                                      color: Colors.white,    
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                            ),
+                            const SizedBox(width: 16),
+                            // Left content
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Movie title and year
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                                    textBaseline: TextBaseline.alphabetic,
+                                    children: [
+                                      Text(
+                                        review['movieTitle'],
+                                        style: GoogleFonts.openSans(
+                                          color: Colors.white,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Text(
+                                        ' 2019', // Added space before year
+                                        style: GoogleFonts.openSans(
+                                          color: Colors.grey[400],
+                                          fontSize: 8,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  // Reviewed by
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Review by ',
+                                        style: GoogleFonts.openSans(
+                                          color: Colors.grey[400],
+                                          fontSize: 9,
+                                        ),
+                                      ),
+                                      Text(
+                                        review['author'],
+                                        style: GoogleFonts.openSans(
+                                          color: const Color(0xFFE9A6A6),
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // Rating stars and comments
+                                  Row(
+                                    children: [
+                                      ...List.generate(5, (index) {
+                                        final double rating = review['rating'];
+                                        return SvgPicture.asset(
+                                          'assets/icons/star.svg',
+                                          colorFilter: ColorFilter.mode(
+                                            index < rating ? const Color(0xFFEC2626) : Colors.grey[600]!,
+                                            BlendMode.srcIn
+                                          ),
+                                          width: 12,
+                                          height: 12,
+                                        );
+                                      }),
+                                      const SizedBox(width: 8),
+                                      Icon(
+                                        Icons.chat_bubble_outline,
+                                        color: Colors.grey[400],
+                                        size: 12,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '8',
+                                        style: GoogleFonts.openSans(
+                                          color: Colors.grey[400],
+                                          fontSize: 8,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // Review text
+                                  Text(
+                                    review['content'],
+                                    style: GoogleFonts.openSans(
+                                      color: Colors.grey[300],
+                                      fontSize: 7,
+                                      height: 1.4,
+                                    ),
+                                    maxLines: 6,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // Read more
+                                  Text(
+                                    'Read more >',
+                                    style: GoogleFonts.openSans(
+                                      color: const Color(0xFF9C4FD6),
+                                      fontSize: 7,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            // Movie Poster
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: CachedNetworkImage(
+                                imageUrl: review['posterPath'],
+                                width: 90,
+                                height: 135,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  color: Colors.grey[800],
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  color: Colors.grey[800],
+                                  child: const Icon(Icons.error),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  )),
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         );
       }),
+      bottomNavigationBar: const CustomBottomNav(currentIndex: 0),
     );
   }
 }
@@ -106,51 +390,99 @@ class _MovieCard extends StatelessWidget {
       onTap: () {
         Get.toNamed(AppRoutes.movieDetailPath(movie.id.toString()));
       },
-      child: Container(
-        width: 130,
-        margin: const EdgeInsets.only(right: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: CachedNetworkImage(
-                  imageUrl: movie.posterUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: Colors.grey[800],
-                    child: const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: Colors.grey[800],
-                    child: const Icon(Icons.error),
+      child: SizedBox(
+        width: 100,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: SizedBox(
+            width: 100,
+            height: 141,
+            child: CachedNetworkImage(
+              imageUrl: movie.posterUrl,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                color: Colors.grey[800],
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              movie.title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              movie.releaseDate.split('-')[0],
-              style: TextStyle(
-                color: Colors.grey[400],
-                fontSize: 12,
+              errorWidget: (context, url, error) => Container(
+                color: Colors.grey[800],
+                child: const Icon(Icons.error),
               ),
             ),
-          ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _ListCard extends StatelessWidget {
+  final String title;
+  final String author;
+  final String posterPath;
+
+  const _ListCard({
+    required this.title,
+    required this.author,
+    required this.posterPath,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 58,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: SizedBox(
+              width: 58,
+              height: 82,
+              child: CachedNetworkImage(
+                imageUrl: 'https://image.tmdb.org/t/p/w500$posterPath',
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  color: Colors.grey[800],
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
+                  ),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  color: Colors.grey[800],
+                  child: const Icon(Icons.error),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: GoogleFonts.openSans(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'by $author',
+            style: GoogleFonts.openSans(
+              color: Colors.grey[400],
+              fontSize: 8,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }

@@ -6,6 +6,8 @@ import 'package:letterboxd/features/onboarding/onboarding_page.dart';
 import 'package:letterboxd/features/profile/profile_page.dart';
 import 'package:letterboxd/features/movie/movie_detail_page.dart';
 import 'package:letterboxd/features/review/review_form_page.dart';
+import 'package:letterboxd/features/explore/explore_page.dart';
+import 'package:letterboxd/features/activity/activity_page.dart';
 
 class AppRoutes {
   static const String onboarding = '/onboarding';
@@ -19,6 +21,8 @@ class AppRoutes {
   static const String diary = '/diary';
   static const String lists = '/lists';
   static const String likes = '/likes';
+  static const String explore = '/explore';
+  static const String activity = '/activity';
 
   static String movieDetailPath(String id) => '/movie/$id';
   static String reviewFormPath(String movieId) => '/review/$movieId';
@@ -56,5 +60,13 @@ class AppRoutes {
         movieId: Get.parameters['movieId'] ?? '',
       ),
     ),
+    GetPage(
+      name: explore,
+      page: () => const ExplorePage(),
+    ),
+    // GetPage(
+    //   name: activity,
+    //   page: () => const ActivityPage(),
+    // ),
   ];
 } 

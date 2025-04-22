@@ -1,152 +1,172 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:letterboxd/core/models/user.dart';
+import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
+import 'package:letterboxd/routes/app_routes.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:letterboxd/core/widgets/custom_bottom_nav.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Replace with actual user data from auth service
-    final user = User(
-      id: '1',
-      username: 'John Doe',
-      email: 'john@example.com',
-      watchedMovies: 42,
-      reviews: 10,
-      followers: 100,
-      following: 50,
-    );
+    final authController = Get.find<AuthController>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF14181C),
+      backgroundColor: const Color(0xFF1F1D36),
       appBar: AppBar(
-        title: const Text('Profile'),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        title: Text(
+          'Profile',
+          style: GoogleFonts.openSans(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Get.back(),
+        ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Colors.grey[800],
-                  child: const Icon(
-                    Icons.person,
-                    size: 40,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      user.username,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Profile Header
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: Colors.grey[800],
+                    child: Text(
+                      authController.currentUser?.username.substring(0, 1).toUpperCase() ?? 'G',
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 24,
+                        fontSize: 32,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      user.email,
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 14,
-                      ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          authController.currentUser?.username ?? 'Guest',
+                          style: GoogleFonts.openSans(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          authController.currentUser?.email ?? 'guest@example.com',
+                          style: GoogleFonts.openSans(
+                            color: Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+              
+              // Menu Items
+              _MenuItem(
+                icon: Icons.person_outline,
+                title: 'Edit Profile',
+                onTap: () {
+                  // TODO: Navigate to edit profile page
+                },
+              ),
+              _MenuItem(
+                icon: Icons.settings_outlined,
+                title: 'Settings',
+                onTap: () {
+                  // TODO: Navigate to settings page
+                },
+              ),
+              _MenuItem(
+                icon: Icons.help_outline,
+                title: 'Help & Support',
+                onTap: () {
+                  // TODO: Navigate to help page
+                },
+              ),
+              _MenuItem(
+                icon: Icons.info_outline,
+                title: 'About',
+                onTap: () {
+                  // TODO: Navigate to about page
+                },
+              ),
+              const Spacer(),
+              _MenuItem(
+                icon: Icons.logout,
+                title: 'Logout',
+                onTap: () {
+                  authController.logout();
+                  Get.offAllNamed(AppRoutes.login);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: const CustomBottomNav(currentIndex: 3),
+    );
+  }
+}
+
+class _MenuItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  const _MenuItem({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: Colors.white,
+              size: 24,
             ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildStatColumn('Watched', user.watchedMovies),
-                _buildStatColumn('Reviews', user.reviews),
-                _buildStatColumn('Followers', user.followers),
-                _buildStatColumn('Following', user.following),
-              ],
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: GoogleFonts.openSans(
+                color: Colors.white,
+                fontSize: 16,
+              ),
             ),
-            const SizedBox(height: 32),
-            _buildSectionTitle('Activity'),
-            const SizedBox(height: 16),
-            _buildActivityList(),
+            const Spacer(),
+            const Icon(
+              Icons.chevron_right,
+              color: Colors.white,
+              size: 24,
+            ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildStatColumn(String label, int value) {
-    return Column(
-      children: [
-        Text(
-          value.toString(),
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.grey[400],
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
-      ),
-    );
-  }
-
-  Widget _buildActivityList() {
-    // TODO: Replace with actual activity data
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: 5,
-      itemBuilder: (context, index) {
-        return ListTile(
-          leading: Container(
-            width: 50,
-            height: 75,
-            decoration: BoxDecoration(
-              color: Colors.grey[800],
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-          title: const Text(
-            'Movie Title',
-            style: TextStyle(color: Colors.white),
-          ),
-          subtitle: Text(
-            'Rated 4.5 stars',
-            style: TextStyle(color: Colors.grey[400]),
-          ),
-          trailing: Text(
-            '2h ago',
-            style: TextStyle(color: Colors.grey[400]),
-          ),
-        );
-      },
     );
   }
 } 
