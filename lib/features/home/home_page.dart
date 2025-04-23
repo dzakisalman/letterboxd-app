@@ -36,14 +36,16 @@ class HomePage extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                   child: Row(
                     children: [
-                      IconButton(
-                        icon: SvgPicture.asset(
-                          'assets/icons/sidebar.svg',
-                          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                      Builder(
+                        builder: (context) => IconButton(
+                          icon: SvgPicture.asset(
+                            'assets/icons/sidebar.svg',
+                            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                          ),
+                          onPressed: () {
+                            Scaffold.of(context).openDrawer();
+                          },
                         ),
-                        onPressed: () {
-                          Scaffold.of(context).openDrawer();
-                        },
                       ),
                       const Spacer(),
                       // IconButton(
