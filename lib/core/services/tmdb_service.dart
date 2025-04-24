@@ -128,10 +128,10 @@ class TMDBService {
     );
   }
 
-  static Future<List<Map<String, dynamic>>> getMovieCredits(int movieId) async {
-    return _makeRequest<List<Map<String, dynamic>>>(
+  static Future<Map<String, dynamic>> getMovieCredits(int movieId) async {
+    return _makeRequest<Map<String, dynamic>>(
       endpoint: '/movie/$movieId/credits?api_key=$_apiKey&language=en-US',
-      parser: (data) => List<Map<String, dynamic>>.from(data['cast']),
+      parser: (data) => data,
     );
   }
 

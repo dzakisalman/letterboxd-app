@@ -6,11 +6,13 @@ class MovieDetailController extends GetxController {
   final RxBool isLoading = true.obs;
   final Rx<Movie?> movie = Rx<Movie?>(null);
   final RxList<Map<String, dynamic>> cast = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> crew = <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> reviews = <Map<String, dynamic>>[].obs;
   final RxList<Movie> similarMovies = <Movie>[].obs;
   final RxList<Movie> recommendedMovies = <Movie>[].obs;
   final RxBool isInWatchlist = false.obs;
   final RxDouble userRating = 0.0.obs;
+  final RxString movieDirector = ''.obs;
 
   Future<void> loadMovieDetails(String movieId) async {
     try {
@@ -19,16 +21,33 @@ class MovieDetailController extends GetxController {
       // Load movie details
       movie.value = await TMDBService.getMovieDetails(int.parse(movieId));
 
-      // Load cast
+      // Load cast and crew
       final credits = await TMDBService.getMovieCredits(int.parse(movieId));
-      cast.value = credits
-          .take(5)
+      
+      // Separate cast and crew - credits response already separates them in 'cast' and 'crew' arrays
+      cast.value = (credits['cast'] as List)
           .map((actor) => {
                 'name': actor['name'],
                 'character': actor['character'],
                 'profile_path': actor['profile_path'],
               })
           .toList();
+
+      crew.value = (credits['crew'] as List)
+          .map((member) => {
+                'name': member['name'],
+                'job': member['job'],
+                'department': member['department'],
+                'profile_path': member['profile_path'],
+              })
+          .toList();
+
+      // Get director from crew
+      final director = crew.firstWhere(
+        (crew) => crew['job'] == 'Director',
+        orElse: () => {'name': 'Unknown'},
+      );
+      movieDirector.value = director['name'];
 
       // Load reviews
       final reviewsList = await TMDBService.getMovieReviews(int.parse(movieId));
