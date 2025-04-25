@@ -7,6 +7,7 @@ import 'package:letterboxd/features/movie/controllers/movie_detail_controller.da
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:letterboxd/core/widgets/review_card.dart';
 
 // Custom clipper for diagonal line
 class DiagonalClipper extends CustomClipper<Path> {
@@ -393,6 +394,73 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                           crew: controller.crew,
                           movie: movie,
                         ),
+                        const SizedBox(height: 32),
+                        // All Reviews Section
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'All Reviews',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                // TODO: Navigate to all reviews page
+                              },
+                              child: Text(
+                                'See All',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: const Color(0xFF9C4FD6),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        // Reviews List
+                        Obx(() {
+                          if (controller.reviews.isEmpty) {
+                            return Center(
+                              child: Text(
+                                'No reviews yet',
+                                style: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: 14,
+                                ),
+                              ),
+                            );
+                          }
+
+                          return Column(
+                            children: controller.reviews.take(3).map((review) {
+                              final authorDetails = review['author_details'] ?? {};
+                              return ReviewCard(
+                                authorName: review['author'] ?? 'Anonymous',
+                                avatarUrl: authorDetails['avatar_path'] != null 
+                                  ? authorDetails['avatar_path']!.startsWith('/') 
+                                    ? authorDetails['avatar_path']!.substring(1) 
+                                    : 'https://image.tmdb.org/t/p/w185${authorDetails['avatar_path']}'
+                                  : null,
+                                rating: (authorDetails['rating'] ?? 0.0) / 2,
+                                content: review['content'] ?? 'No content',
+                                commentCount: 0,
+                                movieTitle: movie.title,
+                                movieYear: movie.releaseDate.split('-')[0],
+                                moviePosterUrl: movie.posterUrl,
+                                isDetailPage: true,
+                                onTap: () {
+                                  // TODO: Navigate to full review
+                                },
+                              );
+                            }).toList(),
+                          );
+                        }),
                       ],
                     ),
                   ),

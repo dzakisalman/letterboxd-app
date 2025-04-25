@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 import 'package:letterboxd/core/models/movie.dart';
 import 'package:letterboxd/core/services/tmdb_service.dart';
+import 'package:letterboxd/routes/app_routes.dart';
+import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
 
 class MovieDetailController extends GetxController {
   final RxBool isLoading = true.obs;
@@ -17,55 +19,38 @@ class MovieDetailController extends GetxController {
   Future<void> loadMovieDetails(String movieId) async {
     try {
       isLoading.value = true;
+      final movieIdInt = int.parse(movieId);
       
       // Load movie details
-      movie.value = await TMDBService.getMovieDetails(int.parse(movieId));
+      final movieData = await TMDBService.getMovieDetails(movieIdInt);
+      movie.value = movieData;
 
-      // Load cast and crew
-      final credits = await TMDBService.getMovieCredits(int.parse(movieId));
+      // Load credits
+      final creditsData = await TMDBService.getMovieCredits(movieIdInt);
+      final castData = creditsData['cast'] as List;
+      final crewData = creditsData['crew'] as List;
       
-      // Separate cast and crew - credits response already separates them in 'cast' and 'crew' arrays
-      cast.value = (credits['cast'] as List)
-          .map((actor) => {
-                'name': actor['name'],
-                'character': actor['character'],
-                'profile_path': actor['profile_path'],
-              })
-          .toList();
+      cast.value = castData.map((item) => item as Map<String, dynamic>).toList();
+      crew.value = crewData.map((item) => item as Map<String, dynamic>).toList();
 
-      crew.value = (credits['crew'] as List)
-          .map((member) => {
-                'name': member['name'],
-                'job': member['job'],
-                'department': member['department'],
-                'profile_path': member['profile_path'],
-              })
-          .toList();
-
-      // Get director from crew
+      // Find director
       final director = crew.firstWhere(
-        (crew) => crew['job'] == 'Director',
+        (person) => person['job'] == 'Director',
         orElse: () => {'name': 'Unknown'},
       );
       movieDirector.value = director['name'];
 
       // Load reviews
-      final reviewsList = await TMDBService.getMovieReviews(int.parse(movieId));
-      reviews.value = reviewsList
-          .take(3)
-          .map((review) => {
-                'author': review['author'],
-                'content': review['content'],
-                'rating': review['author_details']['rating'],
-                'created_at': review['created_at'],
-              })
-          .toList();
+      final reviewsData = await TMDBService.getMovieReviews(movieIdInt);
+      reviews.value = reviewsData;
 
       // Load similar movies
-      similarMovies.value = await TMDBService.getSimilarMovies(int.parse(movieId));
+      final similarData = await TMDBService.getSimilarMovies(movieIdInt);
+      similarMovies.value = similarData;
 
       // Load recommended movies
-      recommendedMovies.value = await TMDBService.getRecommendedMovies(int.parse(movieId));
+      final recommendedData = await TMDBService.getRecommendedMovies(movieIdInt);
+      recommendedMovies.value = recommendedData;
 
     } catch (e) {
       Get.snackbar(
@@ -75,6 +60,19 @@ class MovieDetailController extends GetxController {
       );
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  void navigateToReviewForm() {
+    final authController = Get.find<AuthController>();
+    if (authController.currentUser != null) {
+      Get.toNamed(AppRoutes.reviewFormPath(movie.value!.id.toString()));
+    } else {
+      Get.snackbar(
+        'Error',
+        'Please login to write a review',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
@@ -155,15 +153,6 @@ class MovieDetailController extends GetxController {
         'Error',
         'Failed to remove rating: ${e.toString()}',
         snackPosition: SnackPosition.BOTTOM,
-      );
-    }
-  }
-
-  void navigateToReviewForm() {
-    if (movie.value != null) {
-      Get.toNamed(
-        '/review/${movie.value!.id}',
-        arguments: movie.value,
       );
     }
   }

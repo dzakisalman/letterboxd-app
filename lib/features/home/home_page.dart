@@ -9,6 +9,7 @@ import 'package:letterboxd/routes/app_routes.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:letterboxd/core/widgets/custom_bottom_nav.dart';
+import 'package:letterboxd/core/widgets/review_card.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -197,175 +198,18 @@ class HomePage extends StatelessWidget {
                     itemCount: homeController.recentReviews.length,
                     itemBuilder: (context, index) {
                       final review = homeController.recentReviews[index];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 24),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE9A6A6).withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Profile Photo
-                            CircleAvatar(
-                              radius: 24,
-                              backgroundColor: Colors.grey[800],
-                              child: review['avatarUrl'] != null
-                                ? ClipOval(
-                                    child: CachedNetworkImage(
-                                      imageUrl: review['avatarUrl']!,
-                                      fit: BoxFit.cover,
-                                      placeholder: (context, url) => const Center(
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      ),
-                                      errorWidget: (context, url, error) => Text(
-                                        review['author'][0].toUpperCase(),
-                                        style: GoogleFonts.openSans(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                : Text(
-                                    review['author'][0].toUpperCase(),
-                                    style: GoogleFonts.openSans(
-                                      color: Colors.white,    
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                            ),
-                            const SizedBox(width: 16),
-                            // Left content
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Movie title and year
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                                    textBaseline: TextBaseline.alphabetic,
-                                    children: [
-                                      Text(
-                                        review['movieTitle'],
-                                        style: GoogleFonts.openSans(
-                                          color: Colors.white,
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      Text(
-                                        ' 2019', // Added space before year
-                                        style: GoogleFonts.openSans(
-                                          color: Colors.grey[400],
-                                          fontSize: 8,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  // Reviewed by
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Review by ',
-                                        style: GoogleFonts.openSans(
-                                          color: Colors.grey[400],
-                                          fontSize: 9,
-                                        ),
-                                      ),
-                                      Text(
-                                        review['author'],
-                                        style: GoogleFonts.openSans(
-                                          color: const Color(0xFFE9A6A6),
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  // Rating stars and comments
-                                  Row(
-                                    children: [
-                                      ...List.generate(5, (index) {
-                                        final double rating = review['rating'];
-                                        return SvgPicture.asset(
-                                          'assets/icons/star.svg',
-                                          colorFilter: ColorFilter.mode(
-                                            index < rating ? const Color(0xFFEC2626) : Colors.grey[600]!,
-                                            BlendMode.srcIn
-                                          ),
-                                          width: 12,
-                                          height: 12,
-                                        );
-                                      }),
-                                      const SizedBox(width: 8),
-                                      Icon(
-                                        Icons.chat_bubble_outline,
-                                        color: Colors.grey[400],
-                                        size: 12,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '8',
-                                        style: GoogleFonts.openSans(
-                                          color: Colors.grey[400],
-                                          fontSize: 8,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  // Review text
-                                  Text(
-                                    review['content'],
-                                    style: GoogleFonts.openSans(
-                                      color: Colors.grey[300],
-                                      fontSize: 7,
-                                      height: 1.4,
-                                    ),
-                                    maxLines: 6,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  // Read more
-                                  Text(
-                                    'Read more >',
-                                    style: GoogleFonts.openSans(
-                                      color: const Color(0xFF9C4FD6),
-                                      fontSize: 7,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            // Movie Poster
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: CachedNetworkImage(
-                                imageUrl: review['posterPath'],
-                                width: 90,
-                                height: 135,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => Container(
-                                  color: Colors.grey[800],
-                                ),
-                                errorWidget: (context, url, error) => Container(
-                                  color: Colors.grey[800],
-                                  child: const Icon(Icons.error),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                      return ReviewCard(
+                        authorName: review['author'],
+                        avatarUrl: review['avatarUrl'],
+                        rating: review['rating'],
+                        content: review['content'],
+                        commentCount: 8,
+                        movieTitle: review['movieTitle'],
+                        movieYear: '2019',
+                        moviePosterUrl: review['posterPath'],
+                        onTap: () {
+                          // TODO: Navigate to review detail
+                        },
                       );
                     },
                   )),
