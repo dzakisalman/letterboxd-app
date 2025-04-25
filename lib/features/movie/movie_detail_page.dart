@@ -34,7 +34,244 @@ class DiagonalClipper extends CustomClipper<Path> {
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
+class MovieTabWidget extends StatefulWidget {
+  final List<dynamic> cast;
+  final List<dynamic> crew;
+  final Movie movie;
 
+  const MovieTabWidget({
+    super.key,
+    required this.cast,
+    required this.crew,
+    required this.movie,
+  });
+
+  @override
+  State<MovieTabWidget> createState() => _MovieTabWidgetState();
+}
+
+class _MovieTabWidgetState extends State<MovieTabWidget> with SingleTickerProviderStateMixin {
+  late TabController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TabController(length: 3, vsync: this);
+    _controller.addListener(() {
+      setState(() {}); // to rebuild and move the line
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Widget _buildCastSection() {
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: widget.cast.length,
+      itemBuilder: (context, index) {
+        final actor = widget.cast[index];
+        return Container(
+          width: 80,
+          margin: const EdgeInsets.only(right: 12),
+          child: Column(
+            children: [
+              CircleAvatar(
+                radius: 25,
+                backgroundImage: actor['profile_path'] != null
+                    ? CachedNetworkImageProvider(
+                        TMDBService.getImageUrl(actor['profile_path']),
+                      )
+                    : null,
+                backgroundColor: Colors.grey[800],
+                child: actor['profile_path'] == null
+                    ? const Icon(Icons.person, color: Colors.white70)
+                    : null,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                actor['name'],
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                actor['character'] ?? '',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 10,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCrewSection() {
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: widget.crew.length,
+      itemBuilder: (context, index) {
+        final crew = widget.crew[index];
+        return Container(
+          width: 80,
+          margin: const EdgeInsets.only(right: 12),
+          child: Column(
+            children: [
+              CircleAvatar(
+                radius: 25,
+                backgroundImage: crew['profile_path'] != null
+                    ? CachedNetworkImageProvider(
+                        TMDBService.getImageUrl(crew['profile_path']),
+                      )
+                    : null,
+                backgroundColor: Colors.grey[800],
+                child: crew['profile_path'] == null
+                    ? const Icon(Icons.person, color: Colors.white70)
+                    : null,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                crew['name'],
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                crew['job'] ?? '',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 10,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailsSection() {
+    return ListView(
+      scrollDirection: Axis.horizontal,
+      children: [
+        Container(
+          width: MediaQuery.of(context).size.width - 32,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.movie.overview,
+                style: TextStyle(
+                  color: Colors.grey[300],
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        TabBar(
+          controller: _controller,
+          isScrollable: true,
+          tabs: const [
+            Tab(text: 'Casts'),
+            Tab(text: 'Crews'),
+            Tab(text: 'Details'),
+          ],
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.grey,
+          labelStyle: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+          ),
+          indicator: BoxDecoration(
+            color: const Color(0xFF864879),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          indicatorSize: TabBarIndicatorSize.tab,
+          dividerColor: Colors.transparent,
+          padding: EdgeInsets.zero,
+          labelPadding: const EdgeInsets.symmetric(horizontal: 15),
+          indicatorPadding: const EdgeInsets.symmetric(horizontal: 1, vertical: 9),
+          splashBorderRadius: BorderRadius.circular(20),
+          overlayColor: MaterialStateProperty.all(Colors.transparent),
+          tabAlignment: TabAlignment.start,
+        ),
+
+        // Animated line under active tab
+        Align(
+          alignment: Alignment.centerLeft,
+          child: AnimatedBuilder(
+            animation: _controller.animation!,
+            builder: (context, child) {
+              final selectedIndex = _controller.index;
+              final tabWidth = 73.0; // Fixed width for each tab
+              final leftPadding = selectedIndex * tabWidth + 13;
+
+              return Padding(
+                padding: EdgeInsets.only(left: leftPadding, top: 4),
+                child: Container(
+                  width: tabWidth - 30,
+                  height: 3,
+                  color: const Color(0xFF864879),
+                ),
+              );
+            },
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        SizedBox(
+          height: 120,
+          child: TabBarView(
+            controller: _controller,
+            children: [
+              _buildCastSection(),
+              _buildCrewSection(),
+              _buildDetailsSection(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 class MovieDetailPage extends StatefulWidget {
   final String movieId;
@@ -125,12 +362,12 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                     ),
                                     const SizedBox(height: 6),
                                     Obx(() => Text(
-                                      'Directed by ${controller.movieDirector.value}',
-                                      style: TextStyle(
-                                        color: Colors.grey[300],
-                                        fontSize: 12,
-                                      ),
-                                    )),
+                                          'Directed by ${controller.movieDirector.value}',
+                                          style: TextStyle(
+                                            color: Colors.grey[300],
+                                            fontSize: 12,
+                                          ),
+                                        )),
                                     const SizedBox(height: 12),
                                     Text(
                                       movie.overview,
@@ -151,53 +388,10 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                         const SizedBox(height: 0),
                         _buildActionButtons(),
                         const SizedBox(height: 24),
-                        DefaultTabController(
-                          length: 3,
-                          child: Column(
-                            children: [
-                              TabBar(
-                                isScrollable: true,
-                                tabs: const [
-                                  Tab(text: 'Casts'),
-                                  Tab(text: 'Crews'),
-                                  Tab(text: 'Details'),
-                                ],
-                                labelColor: Colors.white,
-                                unselectedLabelColor: Colors.grey,
-                                labelStyle: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                unselectedLabelStyle: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                indicator: BoxDecoration(
-                                  color: const Color(0xFF864879),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                indicatorSize: TabBarIndicatorSize.tab,
-                                dividerColor: Colors.transparent,
-                                padding: EdgeInsets.zero,
-                                labelPadding: const EdgeInsets.symmetric(horizontal: 8),
-                                indicatorPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                                splashBorderRadius: BorderRadius.circular(20),
-                                overlayColor: MaterialStateProperty.all(Colors.transparent),
-                                tabAlignment: TabAlignment.start,
-                              ),
-                              const SizedBox(height: 16),
-                              SizedBox(
-                                height: 120,
-                                child: TabBarView(
-                                  children: [
-                                    _buildCastSection(),
-                                    _buildCrewSection(),
-                                    _buildDetailsSection(),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
+                        MovieTabWidget(
+                          cast: controller.cast,
+                          crew: controller.crew,
+                          movie: movie,
                         ),
                       ],
                     ),
@@ -362,7 +556,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     );
   }
 
-  Widget _buildActionButton(String text, {required VoidCallback onPressed, required String svgPath}) {
+  Widget _buildActionButton(String text,
+      {required VoidCallback onPressed, required String svgPath}) {
     final Color activeColor = const Color(0xFFE9A6A6);
     final Color backgroundColor = const Color(0xFF1F1D36);
 
@@ -455,7 +650,9 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                       (index) => Expanded(
                         child: Container(
                           margin: const EdgeInsets.symmetric(horizontal: 1),
-                          height: [20, 30, 40, 50, 60, 70, 80, 90][index].toDouble() * 0.7,
+                          height: [20, 30, 40, 50, 60, 70, 80, 90][index]
+                                  .toDouble() *
+                              0.7,
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.5),
                             borderRadius: const BorderRadius.vertical(
@@ -506,136 +703,6 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildCastSection() {
-    return ListView.builder(
-      scrollDirection: Axis.horizontal,
-      itemCount: controller.cast.length,
-      itemBuilder: (context, index) {
-        final actor = controller.cast[index];
-        return Container(
-          width: 80,
-          margin: const EdgeInsets.only(right: 12),
-          child: Column(
-            children: [
-              CircleAvatar(
-                radius: 25,
-                backgroundImage: actor['profile_path'] != null
-                    ? CachedNetworkImageProvider(
-                        TMDBService.getImageUrl(actor['profile_path']),
-                      )
-                    : null,
-                backgroundColor: Colors.grey[800],
-                child: actor['profile_path'] == null
-                    ? const Icon(Icons.person, color: Colors.white70)
-                    : null,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                actor['name'],
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 12,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                actor['character'] ?? '',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.grey[500],
-                  fontSize: 10,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildCrewSection() {
-    return ListView.builder(
-      scrollDirection: Axis.horizontal,
-      itemCount: controller.crew.length,
-      itemBuilder: (context, index) {
-        final crew = controller.crew[index];
-        return Container(
-          width: 80,
-          margin: const EdgeInsets.only(right: 12),
-          child: Column(
-            children: [
-              CircleAvatar(
-                radius: 25,
-                backgroundImage: crew['profile_path'] != null
-                    ? CachedNetworkImageProvider(
-                        TMDBService.getImageUrl(crew['profile_path']),
-                      )
-                    : null,
-                backgroundColor: Colors.grey[800],
-                child: crew['profile_path'] == null
-                    ? const Icon(Icons.person, color: Colors.white70)
-                    : null,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                crew['name'],
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 12,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                crew['job'] ?? '',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.grey[500],
-                  fontSize: 10,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDetailsSection() {
-    final movie = controller.movie.value!;
-    return ListView(
-      scrollDirection: Axis.horizontal,
-      children: [
-        Container(
-          width: MediaQuery.of(context).size.width - 32,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                movie.overview,
-                style: TextStyle(
-                  color: Colors.grey[300],
-                  fontSize: 14,
-                  height: 1.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }
