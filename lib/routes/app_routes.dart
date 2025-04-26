@@ -25,7 +25,8 @@ class AppRoutes {
   static const String activity = '/activity';
 
   static String movieDetailPath(String id) => '/movie/$id';
-  static String reviewFormPath(String movieId) => '/review/$movieId';
+  static String reviewFormPath(String movieId, String movieTitle, String movieYear, String posterPath) => 
+    '/review/$movieId?title=${Uri.encodeComponent(movieTitle)}&year=${Uri.encodeComponent(movieYear)}&poster=${Uri.encodeComponent(posterPath)}';
 
   static final pages = [
     GetPage(
@@ -58,6 +59,9 @@ class AppRoutes {
       name: reviewForm,
       page: () => ReviewFormPage(
         movieId: Get.parameters['movieId'] ?? '',
+        movieTitle: Uri.decodeComponent(Get.parameters['title'] ?? ''),
+        movieYear: Uri.decodeComponent(Get.parameters['year'] ?? ''),
+        posterPath: Uri.decodeComponent(Get.parameters['poster'] ?? ''),
       ),
     ),
     GetPage(

@@ -3,6 +3,7 @@ import 'package:letterboxd/core/models/movie.dart';
 import 'package:letterboxd/core/services/tmdb_service.dart';
 import 'package:letterboxd/routes/app_routes.dart';
 import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
+import 'package:letterboxd/core/services/api_service.dart';
 
 class MovieDetailController extends GetxController {
   final RxBool isLoading = true.obs;
@@ -65,8 +66,18 @@ class MovieDetailController extends GetxController {
 
   void navigateToReviewForm() {
     final authController = Get.find<AuthController>();
-    if (authController.currentUser != null) {
-      Get.toNamed(AppRoutes.reviewFormPath(movie.value!.id.toString()));
+    if (authController.currentUser != null && movie.value != null) {
+      final movieData = movie.value!;
+      final posterUrl = movieData.posterPath != null 
+          ? '${ApiService.imageBaseUrl}/w500${movieData.posterPath}'
+          : 'https://via.placeholder.com/500x750?text=No+Poster';
+      
+      Get.toNamed(AppRoutes.reviewFormPath(
+        movieData.id.toString(),
+        movieData.title,
+        movieData.releaseDate.substring(0, 4),
+        posterUrl,
+      ));
     } else {
       Get.snackbar(
         'Error',

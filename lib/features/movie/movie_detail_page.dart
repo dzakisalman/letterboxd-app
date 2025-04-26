@@ -316,75 +316,115 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                 _buildAppBar(movie),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+                    padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Placeholder for poster space
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(width: 120), // Width of poster
-                            const SizedBox(width: 16),
-                            // Movie info
-                            Expanded(
-                              child: SizedBox(
-                                height: 180,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          movie.title,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          movie.releaseDate.split('-')[0],
-                                          style: TextStyle(
-                                            color: Colors.grey[400],
-                                            fontSize: 12,
-                                          ),
+                        Transform.translate(
+                          offset: const Offset(0, -100),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(4),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.3),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
                                         ),
                                       ],
                                     ),
-                                    Text(
-                                      '${movie.runtime} mins',
-                                      style: TextStyle(
-                                        color: Colors.grey[400],
-                                        fontSize: 12,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: CachedNetworkImage(
+                                        imageUrl: movie.posterUrl,
+                                        width: 120,
+                                        height: 180,
+                                        fit: BoxFit.cover,
                                       ),
                                     ),
-                                    const SizedBox(height: 6),
-                                    Obx(() => Text(
-                                          'Directed by ${controller.movieDirector.value}',
-                                          style: TextStyle(
-                                            color: Colors.grey[300],
-                                            fontSize: 12,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Stats
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      _buildStat('assets/icons/eyes.svg', '40k'),
+                                      const SizedBox(width: 16),
+                                      _buildStat('assets/icons/fav.svg', '30k'),
+                                      const SizedBox(width: 16),
+                                      _buildStat('assets/icons/listed.svg', '12k'),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 16),
+                              // Movie info
+                              Expanded(
+                                child: SizedBox(
+                                  height: 180,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              movie.title,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
                                           ),
-                                        )),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      movie.overview,
-                                      style: TextStyle(
-                                        color: Colors.grey[300],
-                                        fontSize: 12,
-                                        height: 1.4,
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            movie.releaseDate.split('-')[0],
+                                            style: TextStyle(
+                                              color: Colors.grey[400],
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      maxLines: 3,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
+                                      Text(
+                                        '${movie.runtime} mins',
+                                        style: TextStyle(
+                                          color: Colors.grey[400],
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Obx(() => Text(
+                                            'Directed by ${controller.movieDirector.value}',
+                                            style: TextStyle(
+                                              color: Colors.grey[300],
+                                              fontSize: 12,
+                                            ),
+                                          )),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        movie.overview,
+                                        style: TextStyle(
+                                          color: Colors.grey[300],
+                                          fontSize: 12,
+                                          height: 1.4,
+                                        ),
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 0),
                         _buildActionButtons(),
@@ -482,48 +522,6 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                 ),
               ),
             ),
-            // Poster overlay
-            Positioned(
-              top: 160, // Adjust this value to overlap with banner
-              left: 16,
-              child: Column(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: CachedNetworkImage(
-                        imageUrl: movie.posterUrl,
-                        width: 120,
-                        height: 180,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Stats
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildStat('assets/icons/eyes.svg', '40k'),
-                      const SizedBox(width: 16),
-                      _buildStat('assets/icons/fav.svg', '30k'),
-                      const SizedBox(width: 16),
-                      _buildStat('assets/icons/listed.svg', '12k'),
-                    ],
-                  ),
-                ],
-              ),
-            ),
           ],
         );
       }),
@@ -532,7 +530,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
 
   Widget _buildAppBar(Movie movie) {
     return SliverAppBar(
-      expandedHeight: 200,
+      expandedHeight: 280,
       pinned: true,
       automaticallyImplyLeading: false,
       flexibleSpace: FlexibleSpaceBar(
