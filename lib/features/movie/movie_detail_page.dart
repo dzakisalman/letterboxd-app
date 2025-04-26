@@ -53,13 +53,29 @@ class MovieTabWidget extends StatefulWidget {
 
 class _MovieTabWidgetState extends State<MovieTabWidget> with SingleTickerProviderStateMixin {
   late TabController _controller;
+  final GlobalKey _detailsKey = GlobalKey();
+  double _currentHeight = 120.0;
 
   @override
   void initState() {
     super.initState();
     _controller = TabController(length: 3, vsync: this);
     _controller.addListener(() {
-      setState(() {}); // to rebuild and move the line
+      setState(() {
+        // Update height based on active tab
+        if (_controller.index == 2) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final RenderBox? renderBox = _detailsKey.currentContext?.findRenderObject() as RenderBox?;
+            if (renderBox != null) {
+              setState(() {
+                _currentHeight = renderBox.size.height;
+              });
+            }
+          });
+        } else {
+          _currentHeight = 120.0;
+        }
+      });
     });
   }
 
@@ -173,31 +189,6 @@ class _MovieTabWidgetState extends State<MovieTabWidget> with SingleTickerProvid
     );
   }
 
-  Widget _buildDetailsSection() {
-    return ListView(
-      scrollDirection: Axis.horizontal,
-      children: [
-        Container(
-          width: MediaQuery.of(context).size.width - 32,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.movie.overview,
-                style: TextStyle(
-                  color: Colors.grey[300],
-                  fontSize: 14,
-                  height: 1.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -258,14 +249,77 @@ class _MovieTabWidgetState extends State<MovieTabWidget> with SingleTickerProvid
 
         const SizedBox(height: 16),
 
-        SizedBox(
-          height: 120,
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          height: _currentHeight,
+          curve: Curves.easeInOut,
           child: TabBarView(
             controller: _controller,
             children: [
               _buildCastSection(),
               _buildCrewSection(),
-              _buildDetailsSection(),
+              SingleChildScrollView(
+                key: _detailsKey,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Genre
+                      if (widget.movie.genres.isNotEmpty) ...[
+                        const Text(
+                          'Genres',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: widget.movie.genres.map((genre) => 
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF864879),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Text(
+                                genre,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            )
+                          ).toList(),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                      // Release Date
+                      const Text(
+                        'Release Date',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        widget.movie.releaseDate,
+                        style: TextStyle(
+                          color: Colors.grey[300],
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -419,7 +473,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                           movie.title,
                                           style: const TextStyle(
                                             color: Colors.white,
-                                            fontSize: 24,
+                                            fontSize: 20,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -431,7 +485,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                           movie.releaseDate.split('-')[0],
                                           style: const TextStyle(
                                             color: Colors.white70,
-                                            fontSize: 16,
+                                            fontSize: 14,
                                           ),
                                         ),
                                       ),
@@ -442,7 +496,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                     '${movie.runtime} mins',
                                     style: TextStyle(
                                       color: Colors.grey[400],
-                                      fontSize: 14,
+                                      fontSize: 12,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
@@ -450,19 +504,18 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                     'Directed by ${controller.movieDirector.value}',
                                     style: const TextStyle(
                                       color: Colors.white70,
-                                      fontSize: 14,
+                                      fontSize: 12,
                                     ),
                                   )),
                                   const SizedBox(height: 16),
                                   Text(
                                     movie.overview,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Colors.white70,
-                                      fontSize: 14,
+                                      fontSize: 12,
                                       height: 1.5,
                                     ),
-                                    maxLines: 4,
-                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.justify,
                                   ),
                                 ],
                               ),
