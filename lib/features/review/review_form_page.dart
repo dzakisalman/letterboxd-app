@@ -82,6 +82,14 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
                             ),
                           ),
                           const SizedBox(height: 16),
+                          Text(
+                            'Specify the date you watched it',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
                           GestureDetector(
                             onTap: () async {
                               final DateTime? picked = await showDatePicker(
@@ -100,7 +108,7 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF3D3B54),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(16),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -215,17 +223,17 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
                   maxLines: null,
                   minLines: 10,
                   style: textTheme.bodyMedium?.copyWith(
-                    color: Colors.white,
+                    color: Colors.white.withOpacity(0.5),
                   ),
                   decoration: InputDecoration(
                     hintText: 'Write down your review...',
                     hintStyle: textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
+                      color: Colors.white.withOpacity(0.5),
                     ),
                     filled: true,
                     fillColor: const Color(0xFF3D3B54),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(20),
                       borderSide: BorderSide.none,
                     ),
                     contentPadding: const EdgeInsets.all(16),
