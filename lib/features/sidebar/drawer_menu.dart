@@ -106,12 +106,12 @@ class DrawerMenu extends StatelessWidget {
               child: Row(
                 children: [
                   _FollowerStat(
-                    count: '500',
+                    count: '0',
                     label: 'Followers',
                   ),
                   const Spacer(),
                   _FollowerStat(
-                    count: '420',
+                    count: '0',
                     label: 'Followings',
                   ),
                 ],
