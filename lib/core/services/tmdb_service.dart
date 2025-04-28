@@ -300,6 +300,70 @@ class TMDBService {
     );
   }
 
+  static Future<Map<String, dynamic>> createRequestToken() async {
+    return _makeRequest<Map<String, dynamic>>(
+      endpoint: '/authentication/token/new?api_key=$_apiKey',
+      parser: (data) => data,
+      useCache: false,
+    );
+  }
+
+  static Future<Map<String, dynamic>> validateRequestToken(String requestToken, String username, String password) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/authentication/token/validate_with_login?api_key=$_apiKey'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'username': username,
+        'password': password,
+        'request_token': requestToken,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to validate request token');
+    }
+  }
+
+  static Future<Map<String, dynamic>> createSession(String requestToken) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/authentication/session/new?api_key=$_apiKey'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'request_token': requestToken,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to create session');
+    }
+  }
+
+  static Future<Map<String, dynamic>> getAccountDetails(String sessionId) async {
+    return _makeRequest<Map<String, dynamic>>(
+      endpoint: '/account?api_key=$_apiKey&session_id=$sessionId',
+      parser: (data) => data,
+      useCache: false,
+    );
+  }
+
+  static Future<void> deleteSession(String sessionId) async {
+    final response = await http.delete(
+      Uri.parse('$_baseUrl/authentication/session?api_key=$_apiKey'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'session_id': sessionId,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete session');
+    }
+  }
+
   // Clear cache
   static void clearCache() {
     _cache.clear();
