@@ -13,6 +13,7 @@ class AuthController extends GetxController {
   User? get currentUser => _currentUser.value;
   bool get isLoading => _isLoading.value;
   bool get isLoggedIn => _currentUser.value != null;
+  String? get sessionId => _sessionId;
 
   @override
   void onInit() {
@@ -67,11 +68,21 @@ class AuthController extends GetxController {
       final accountDetails = await TMDBService.getAccountDetails(_sessionId!);
 
       // Create user object
+      final tmdbAvatar = accountDetails['avatar']?['tmdb']?['avatar_path'];
+      final gravatarHash = accountDetails['avatar']?['gravatar']?['hash'];
+      String? profileImageUrl;
+      if (tmdbAvatar != null && tmdbAvatar is String && tmdbAvatar.isNotEmpty) {
+        profileImageUrl = tmdbAvatar.startsWith('/')
+          ? 'https://image.tmdb.org/t/p/w185$tmdbAvatar'
+          : tmdbAvatar;
+      } else if (gravatarHash != null && gravatarHash is String && gravatarHash.isNotEmpty) {
+        profileImageUrl = 'https://www.gravatar.com/avatar/$gravatarHash';
+      }
       final user = User(
         id: accountDetails['id'].toString(),
         username: accountDetails['username'],
         email: accountDetails['email'] ?? '',
-        profileImage: accountDetails['avatar']?['tmdb']?['avatar_path'],
+        profileImage: profileImageUrl,
         watchedMovies: accountDetails['movie_count'] ?? 0,
         reviews: accountDetails['review_count'] ?? 0,
         followers: accountDetails['followers_count'] ?? 0,

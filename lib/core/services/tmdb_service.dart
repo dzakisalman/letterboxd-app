@@ -364,6 +364,47 @@ class TMDBService {
     }
   }
 
+  static Future<List<Movie>> getFavoriteMovies(String sessionId) async {
+    return _makeRequest<List<Movie>>(
+      endpoint: '/account/account_id/favorite/movies?api_key=$_apiKey&session_id=$sessionId&language=en-US&sort_by=created_at.desc&page=1',
+      parser: (data) => (data['results'] as List)
+          .map((movie) => Movie.fromJson(movie))
+          .toList(),
+      useCache: false,
+    );
+  }
+
+  static Future<List<Movie>> getRatedMovies(String sessionId) async {
+    return _makeRequest<List<Movie>>(
+      endpoint: '/account/account_id/rated/movies?api_key=$_apiKey&session_id=$sessionId&language=en-US&sort_by=created_at.desc&page=1',
+      parser: (data) => (data['results'] as List)
+          .map((movie) => Movie.fromJson(movie))
+          .toList(),
+      useCache: false,
+    );
+  }
+
+  static Future<bool> markAsFavorite(String sessionId, int movieId, bool favorite) async {
+    final accountDetails = await getAccountDetails(sessionId);
+    final accountId = accountDetails['id'];
+
+    final response = await http.post(
+      Uri.parse('$_baseUrl/account/$accountId/favorite?api_key=$_apiKey&session_id=$sessionId'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'media_type': 'movie',
+        'media_id': movieId,
+        'favorite': favorite,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception('Failed to mark movie as favorite');
+    }
+  }
+
   // Clear cache
   static void clearCache() {
     _cache.clear();

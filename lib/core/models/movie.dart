@@ -11,6 +11,7 @@ class Movie {
   final String releaseDate;
   final List<String> genres;
   final int runtime;
+  final double? userRating;
 
   Movie({
     required this.id,
@@ -23,6 +24,7 @@ class Movie {
     required this.releaseDate,
     this.genres = const [],
     this.runtime = 0,
+    this.userRating,
   });
 
   String get posterUrl => posterPath != null 
@@ -48,6 +50,7 @@ class Movie {
           .toList() ??
         [],
       runtime: json['runtime'] ?? 0,
+      userRating: json['rating'] != null ? (json['rating'] as num).toDouble() : null,
     );
   }
 
@@ -63,6 +66,7 @@ class Movie {
       'release_date': releaseDate,
       'genres': genres,
       'runtime': runtime,
+      'user_rating': userRating,
     };
   }
 } 
