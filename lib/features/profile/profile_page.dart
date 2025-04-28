@@ -51,11 +51,11 @@ class ProfilePage extends StatelessWidget {
                       top: 110,
                       child: Center(
                         child: CircleAvatar(
-                          radius: 40,
+                    radius: 40,
                           backgroundImage: profileController.authController.currentUser?.profileImage != null
                             ? NetworkImage(profileController.authController.currentUser!.profileImage!)
                             : null,
-                          backgroundColor: Colors.grey[800],
+                    backgroundColor: Colors.grey[800],
                           child: profileController.authController.currentUser?.profileImage == null
                             ? const Icon(Icons.person, size: 40, color: Colors.white70)
                             : null,
@@ -141,9 +141,9 @@ class ProfilePage extends StatelessWidget {
                         '${profileController.authController.currentUser?.reviews ?? 0}',
                         'Review',
                         Colors.purple[400]!
-                      ),
-                    ],
                   ),
+                ],
+              ),
                 ),
                 // Favorite Films Section
                 Padding(
@@ -171,7 +171,7 @@ class ProfilePage extends StatelessWidget {
                             itemBuilder: (context, index) {
                               final movie = profileController.favoriteMovies[index];
                               return GestureDetector(
-                                onTap: () {
+                onTap: () {
                                   Get.toNamed(AppRoutes.movieDetailPath(movie.id.toString()));
                                 },
                                 child: Container(
@@ -244,52 +244,56 @@ class ProfilePage extends StatelessWidget {
                           itemCount: profileController.recentlyWatched.length,
                           itemBuilder: (context, index) {
                             final movie = profileController.recentlyWatched[index];
-                            return Container(
-                              width: 100,
-                              margin: const EdgeInsets.only(right: 8),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: CachedNetworkImage(
-                                        imageUrl: movie.posterUrl,
-                                        fit: BoxFit.cover,
-                                        placeholder: (context, url) => Container(
-                                          color: Colors.grey[800],
-                                          child: const Center(
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
+                            return GestureDetector(
+                              onTap: () {
+                                Get.toNamed(AppRoutes.movieDetailPath(movie.id.toString()));
+                              },
+                              child: Container(
+                                width: 100,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: CachedNetworkImage(
+                                          imageUrl: movie.posterUrl,
+                                          fit: BoxFit.cover,
+                                          placeholder: (context, url) => Container(
+                                            color: Colors.grey[800],
+                                            child: const Center(
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                        errorWidget: (context, url, error) => Container(
-                                          color: Colors.grey[800],
-                                          child: const Icon(Icons.error),
+                                          errorWidget: (context, url, error) => Container(
+                                            color: Colors.grey[800],
+                                            child: const Icon(Icons.error),
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: List.generate(
-                                      5,
-                                      (i) => Icon(
-                                        i < ((movie.userRating ?? 0) / 2).floor() ? Icons.star : Icons.star_border,
-                                        size: 12,
-                                        color: Colors.amber,
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: List.generate(
+                                        5,
+                                        (i) => Icon(
+                                          i < ((movie.userRating ?? 0) / 2).floor() ? Icons.star : Icons.star_border,
+                                          size: 12,
+                                          color: Colors.amber,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  Text(
-                                    'Read Review',
-                                    style: GoogleFonts.openSans(
-                                      color: Colors.grey[400],
-                                      fontSize: 12,
+                                    Text(
+                                      'Read Review',
+                                      style: GoogleFonts.openSans(
+                                        color: Colors.grey[400],
+                                        fontSize: 12,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             );
                           },
@@ -427,10 +431,10 @@ class ProfilePage extends StatelessWidget {
                               ),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
+              ),
+            ],
+          ),
+        ),
                 ],
               ),
             );
@@ -442,10 +446,10 @@ class ProfilePage extends StatelessWidget {
 
   Widget _buildStatItem(String value, String label, Color color) {
     return Column(
-      children: [
-        Text(
+          children: [
+            Text(
           value,
-          style: GoogleFonts.openSans(
+              style: GoogleFonts.openSans(
             fontSize: 24,
             fontWeight: FontWeight.bold,
             color: color,
