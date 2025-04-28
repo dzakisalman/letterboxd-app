@@ -43,7 +43,7 @@ class ReviewCard extends StatelessWidget {
         children: [
           // Profile Photo
           CircleAvatar(
-            radius: isDetailPage ? 20 : 24,
+            radius: isDetailPage ? 16 : 18,
             backgroundColor: Colors.grey[800],
             child: avatarUrl != null
                 ? ClipOval(
@@ -74,7 +74,7 @@ class ReviewCard extends StatelessWidget {
                     ),
                   ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 10),
           // Review content
           Expanded(
             child: Column(
@@ -89,7 +89,7 @@ class ReviewCard extends StatelessWidget {
                       movieTitle,
                       style: GoogleFonts.openSans(
                         color: Colors.white,
-                        fontSize: isDetailPage ? 12 : 9,
+                        fontSize: isDetailPage ? 14 : 11,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -163,10 +163,10 @@ class ReviewCard extends StatelessWidget {
                   content,
                   style: GoogleFonts.openSans(
                     color: Colors.grey[300],
-                    fontSize: 7,
+                    fontSize: 9,
                     height: 1.4,
                   ),
-                  maxLines: 6,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 8),
