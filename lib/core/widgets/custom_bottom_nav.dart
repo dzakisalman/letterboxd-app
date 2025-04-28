@@ -59,7 +59,8 @@ class CustomBottomNav extends StatelessWidget {
                 BlendMode.srcIn,
               ),
             ),
-            activeIcon: Stack(
+            activeIcon: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 SvgPicture.asset(
                   'assets/icons/home.svg',
@@ -68,16 +69,13 @@ class CustomBottomNav extends StatelessWidget {
                     BlendMode.srcIn,
                   ),
                 ),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE9A6A6),
-                      shape: BoxShape.circle,
-                    ),
+                Container(
+                  margin: const EdgeInsets.only(top: 4),
+                  width: 24,
+                  height: 1,
+                  decoration: BoxDecoration(
+                    color: Color(0xFFE9A6A6),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ],
@@ -92,7 +90,8 @@ class CustomBottomNav extends StatelessWidget {
                 BlendMode.srcIn,
               ),
             ),
-            activeIcon: Stack(
+            activeIcon: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 SvgPicture.asset(
                   'assets/icons/explore.svg',
@@ -101,16 +100,13 @@ class CustomBottomNav extends StatelessWidget {
                     BlendMode.srcIn,
                   ),
                 ),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE9A6A6),
-                      shape: BoxShape.circle,
-                    ),
+                Container(
+                  margin: const EdgeInsets.only(top: 4),
+                  width: 24,
+                  height: 1,
+                  decoration: BoxDecoration(
+                    color: Color(0xFFE9A6A6),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ],
@@ -125,7 +121,8 @@ class CustomBottomNav extends StatelessWidget {
                 BlendMode.srcIn,
               ),
             ),
-            activeIcon: Stack(
+            activeIcon: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 SvgPicture.asset(
                   'assets/icons/notification.svg',
@@ -134,16 +131,13 @@ class CustomBottomNav extends StatelessWidget {
                     BlendMode.srcIn,
                   ),
                 ),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE9A6A6),
-                      shape: BoxShape.circle,
-                    ),
+                Container(
+                  margin: const EdgeInsets.only(top: 4),
+                  width: 24,
+                  height: 1,
+                  decoration: BoxDecoration(
+                    color: Color(0xFFE9A6A6),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ],
@@ -158,7 +152,8 @@ class CustomBottomNav extends StatelessWidget {
                 BlendMode.srcIn,
               ),
             ),
-            activeIcon: Stack(
+            activeIcon: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 SvgPicture.asset(
                   'assets/icons/user.svg',
@@ -167,16 +162,13 @@ class CustomBottomNav extends StatelessWidget {
                     BlendMode.srcIn,
                   ),
                 ),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE9A6A6),
-                      shape: BoxShape.circle,
-                    ),
+                Container(
+                  margin: const EdgeInsets.only(top: 4),
+                  width: 24,
+                  height: 1,
+                  decoration: BoxDecoration(
+                    color: Color(0xFFE9A6A6),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ],
