@@ -7,6 +7,8 @@ import 'package:letterboxd/features/profile/controllers/profile_controller.dart'
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:letterboxd/routes/app_routes.dart';
 import 'package:letterboxd/core/widgets/custom_bottom_nav.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:letterboxd/core/widgets/review_card.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -163,7 +165,7 @@ class ProfilePage extends StatelessWidget {
                         "${profileController.authController.currentUser?.name ?? 'User'}'s Favorite Films",
                         style: GoogleFonts.openSans(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
                       ),
@@ -229,7 +231,7 @@ class ProfilePage extends StatelessWidget {
                             "${profileController.authController.currentUser?.name ?? 'User'}'s Recent Watched",
                             style: GoogleFonts.openSans(
                               fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),
                           ),
@@ -293,12 +295,29 @@ class ProfilePage extends StatelessWidget {
                                         ),
                                       ),
                                     ),
-                                    Text(
-                                      'Read Review',
-                                      style: GoogleFonts.openSans(
-                                        color: Color(0xFF9C4A8B),
-                                        fontSize: 10,
-                                      ),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'Read Review',
+                                          style: GoogleFonts.openSans(
+                                            color: Color(0xFF9C4A8B),
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 2),
+                                        // Arrow icon
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 2),
+                                          child: SizedBox(
+                                            width: 9,
+                                            height: 9,
+                                            child: SvgPicture.asset(
+                                              'assets/icons/arrow.svg',
+                                              colorFilter: const ColorFilter.mode(Color(0xFF9C4A8B), BlendMode.srcIn),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -324,7 +343,7 @@ class ProfilePage extends StatelessWidget {
                               "${profileController.authController.currentUser?.name ?? 'User'}'s Recent Reviewed",
                               style: GoogleFonts.openSans(
                                 fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                                 color: Colors.white,
                               ),
                             ),
@@ -341,109 +360,19 @@ class ProfilePage extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         // Review Card
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[900],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // User Avatar
-                              CircleAvatar(
-                                radius: 20,
-                                backgroundImage: profileController.authController.currentUser?.profileImage != null
-                                  ? NetworkImage(profileController.authController.currentUser!.profileImage!)
-                                  : null,
-                                backgroundColor: Colors.grey[800],
-                                child: profileController.authController.currentUser?.profileImage == null
-                                  ? const Icon(Icons.person, color: Colors.white70)
-                                  : null,
-                              ),
-                              const SizedBox(width: 12),
-                              // Review Content
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          profileController.recentlyWatched[0].title,
-                                          style: GoogleFonts.openSans(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          'by ${profileController.authController.currentUser?.name ?? "User"}',
-                                          style: GoogleFonts.openSans(
-                                            color: Colors.grey[400],
-                                            fontSize: 10,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      children: List.generate(
-                                        5,
-                                        (i) => Icon(
-                                          i < (profileController.recentlyWatched[0].voteAverage / 2).floor()
-                                            ? Icons.star
-                                            : i < (profileController.recentlyWatched[0].voteAverage / 2)
-                                              ? Icons.star_half
-                                              : Icons.star_border,
-                                          size: 16,
-                                          color: Color(0xFFE53935),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      profileController.recentlyWatched[0].overview,
-                                      style: GoogleFonts.openSans(
-                                        color: Colors.grey[300],
-                                        fontSize: 11,
-                                      ),
-                                      maxLines: 3,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              // Movie Poster
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: CachedNetworkImage(
-                                  imageUrl: profileController.recentlyWatched[0].posterUrl,
-                                  width: 60,
-                                  height: 90,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => Container(
-                                    color: Colors.grey[800],
-                                    child: const Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    ),
-                                  ),
-                                  errorWidget: (context, url, error) => Container(
-                                    color: Colors.grey[800],
-                                    child: const Icon(Icons.error),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-              ),
-            ],
-          ),
-        ),
+                        ReviewCard(
+                          authorName: profileController.authController.currentUser?.name ?? 'User',
+                          avatarUrl: profileController.authController.currentUser?.profileImage,
+                          rating: (profileController.recentlyWatched[0].userRating ?? 0) / 2,
+                          content: profileController.recentlyWatched[0].overview,
+                          commentCount: 0,
+                          movieTitle: profileController.recentlyWatched[0].title,
+                          movieYear: profileController.recentlyWatched[0].releaseDate.split('-')[0],
+                          moviePosterUrl: profileController.recentlyWatched[0].posterUrl,
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             );
