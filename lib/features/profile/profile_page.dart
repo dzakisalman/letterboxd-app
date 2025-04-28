@@ -122,25 +122,33 @@ class ProfilePage extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildStatItem(
-                        '${profileController.recentlyWatched.length}',
-                        'Total Films',
-                        Colors.pink[200]!
+                      Expanded(
+                        child: _buildStatItem(
+                          '${profileController.recentlyWatched.length}',
+                          'Total Films',
+                          Color(0xFFE9A6A6)!,
+                        ),
                       ),
-                      _buildStatItem(
-                        '${profileController.recentlyWatched.length}',
-                        'Film This Year',
-                        Colors.purple[300]!
+                      Expanded(
+                        child: _buildStatItem(
+                          '${profileController.recentlyWatched.length}',
+                          'Film This Year',
+                          Color(0xFF9C4A8B)!,
+                        ),
                       ),
-                      _buildStatItem(
-                        '0', // TODO: Ganti dengan jumlah list dari TMDB jika sudah ada endpoint
-                        'Lists',
-                        Colors.red[300]!
+                      Expanded(
+                        child: _buildStatItem(
+                          '0', // TODO: Ganti dengan jumlah list dari TMDB jika sudah ada endpoint
+                          'Lists',
+                          Color(0xFFE9A6A6)!,
+                        ),
                       ),
-                      _buildStatItem(
-                        '${profileController.authController.currentUser?.reviews ?? 0}',
-                        'Review',
-                        Colors.purple[400]!
+                      Expanded(
+                        child: _buildStatItem(
+                          '${profileController.authController.currentUser?.reviews ?? 0}',
+                          'Review',
+                          Color(0xFF9C4A8B)!,
+                    ),
                   ),
                 ],
               ),
@@ -149,7 +157,7 @@ class ProfilePage extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
                         "${profileController.authController.currentUser?.name ?? 'User'}'s Favorite Films",
@@ -218,7 +226,7 @@ class ProfilePage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "Recent Watched",
+                            "${profileController.authController.currentUser?.name ?? 'User'}'s Recent Watched",
                             style: GoogleFonts.openSans(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -230,7 +238,7 @@ class ProfilePage extends StatelessWidget {
                             child: Text(
                               'See All',
                               style: GoogleFonts.openSans(
-                                color: Colors.grey[400],
+                                color: Color(0xFFE9A6A6),
                               ),
                             ),
                           ),
@@ -245,7 +253,7 @@ class ProfilePage extends StatelessWidget {
                           itemBuilder: (context, index) {
                             final movie = profileController.recentlyWatched[index];
                             return GestureDetector(
-                              onTap: () {
+                onTap: () {
                                 Get.toNamed(AppRoutes.movieDetailPath(movie.id.toString()));
                               },
                               child: Container(
@@ -281,15 +289,15 @@ class ProfilePage extends StatelessWidget {
                                         (i) => Icon(
                                           i < ((movie.userRating ?? 0) / 2).floor() ? Icons.star : Icons.star_border,
                                           size: 12,
-                                          color: Colors.amber,
+                                          color: Color(0xFFE53935),
                                         ),
                                       ),
                                     ),
                                     Text(
                                       'Read Review',
                                       style: GoogleFonts.openSans(
-                                        color: Colors.grey[400],
-                                        fontSize: 12,
+                                        color: Color(0xFF9C4A8B),
+                                        fontSize: 10,
                                       ),
                                     ),
                                   ],
@@ -313,7 +321,7 @@ class ProfilePage extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              "Recent Reviewed",
+                              "${profileController.authController.currentUser?.name ?? 'User'}'s Recent Reviewed",
                               style: GoogleFonts.openSans(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -325,7 +333,7 @@ class ProfilePage extends StatelessWidget {
                               child: Text(
                                 'See All',
                                 style: GoogleFonts.openSans(
-                                  color: Colors.grey[400],
+                                  color: Color(0xFFE9A6A6),
                                 ),
                               ),
                             ),
@@ -366,6 +374,7 @@ class ProfilePage extends StatelessWidget {
                                           style: GoogleFonts.openSans(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,
+                                            fontSize: 13,
                                           ),
                                         ),
                                         const SizedBox(width: 8),
@@ -373,7 +382,7 @@ class ProfilePage extends StatelessWidget {
                                           'by ${profileController.authController.currentUser?.name ?? "User"}',
                                           style: GoogleFonts.openSans(
                                             color: Colors.grey[400],
-                                            fontSize: 12,
+                                            fontSize: 10,
                                           ),
                                         ),
                                       ],
@@ -389,7 +398,7 @@ class ProfilePage extends StatelessWidget {
                                               ? Icons.star_half
                                               : Icons.star_border,
                                           size: 16,
-                                          color: Colors.amber,
+                                          color: Color(0xFFE53935),
                                         ),
                                       ),
                                     ),
@@ -398,7 +407,7 @@ class ProfilePage extends StatelessWidget {
                                       profileController.recentlyWatched[0].overview,
                                       style: GoogleFonts.openSans(
                                         color: Colors.grey[300],
-                                        fontSize: 14,
+                                        fontSize: 11,
                                       ),
                                       maxLines: 3,
                                       overflow: TextOverflow.ellipsis,
