@@ -79,20 +79,40 @@ class ProfilePage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      '${profileController.authController.currentUser?.followers ?? 0} Followers',
-                      style: GoogleFonts.openSans(
-                        color: Colors.grey[400],
-                        fontSize: 14,
-                      ),
+                    Column(
+                      children: [
+                        Text(
+                          '${profileController.authController.currentUser?.followers ?? 0} Followers',
+                          style: GoogleFonts.openSans(
+                            color: Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          width: 50,
+                          height: 2,
+                          color: Color(0xFFE9A6A6),
+                        ),
+                      ],
                     ),
                     const SizedBox(width: 16),
-                    Text(
-                      '${profileController.authController.currentUser?.following ?? 0} Following',
-                      style: GoogleFonts.openSans(
-                        color: Colors.grey[400],
-                        fontSize: 14,
-                      ),
+                    Column(
+                      children: [
+                        Text(
+                          '${profileController.authController.currentUser?.following ?? 0} Following',
+                          style: GoogleFonts.openSans(
+                            color: Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          width: 50,
+                          height: 2,
+                          color: Color(0xFFE9A6A6),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -103,7 +123,7 @@ class ProfilePage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _buildStatItem(
-                        '${profileController.authController.currentUser?.watchedMovies ?? 0}',
+                        '${profileController.recentlyWatched.length}',
                         'Total Films',
                         Colors.pink[200]!
                       ),
@@ -113,12 +133,12 @@ class ProfilePage extends StatelessWidget {
                         Colors.purple[300]!
                       ),
                       _buildStatItem(
-                        '${profileController.favoriteMovies.length}',
+                        '0', // TODO: Ganti dengan jumlah list dari TMDB jika sudah ada endpoint
                         'Lists',
                         Colors.red[300]!
                       ),
                       _buildStatItem(
-                        '${profileController.recentlyWatched.where((m) => m.voteAverage > 0).length}',
+                        '${profileController.authController.currentUser?.reviews ?? 0}',
                         'Review',
                         Colors.purple[400]!
                       ),
@@ -133,48 +153,56 @@ class ProfilePage extends StatelessWidget {
                     children: [
                       Text(
                         "${profileController.authController.currentUser?.name ?? 'User'}'s Favorite Films",
-          style: GoogleFonts.openSans(
+                        style: GoogleFonts.openSans(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-            color: Colors.white,
+                          color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 12),
                       SizedBox(
-                        height: 150,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: profileController.favoriteMovies.length,
-                          itemBuilder: (context, index) {
-                            final movie = profileController.favoriteMovies[index];
-                            return Container(
-                              width: 100,
-                              margin: const EdgeInsets.only(right: 8),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                color: Colors.grey[800],
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: CachedNetworkImage(
-                                  imageUrl: movie.posterUrl,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => Container(
+                        height: 120,
+                        child: Center(
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            shrinkWrap: true,
+                            itemCount: profileController.favoriteMovies.length,
+                            separatorBuilder: (context, index) => const SizedBox(width: 12),
+                            itemBuilder: (context, index) {
+                              final movie = profileController.favoriteMovies[index];
+                              return GestureDetector(
+                                onTap: () {
+                                  Get.toNamed(AppRoutes.movieDetailPath(movie.id.toString()));
+                                },
+                                child: Container(
+                                  width: 80,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
                                     color: Colors.grey[800],
-                                    child: const Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: CachedNetworkImage(
+                                      imageUrl: movie.posterUrl,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) => Container(
+                                        color: Colors.grey[800],
+                                        child: const Center(
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        ),
+                                      ),
+                                      errorWidget: (context, url, error) => Container(
+                                        color: Colors.grey[800],
+                                        child: const Icon(Icons.error),
                                       ),
                                     ),
                                   ),
-                                  errorWidget: (context, url, error) => Container(
-                                    color: Colors.grey[800],
-                                    child: const Icon(Icons.error),
-                                  ),
                                 ),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ],
@@ -183,12 +211,12 @@ class ProfilePage extends StatelessWidget {
                 // Recent Watched Section
                 Padding(
                   padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
+                        children: [
                           Text(
                             "Recent Watched",
                             style: GoogleFonts.openSans(
@@ -199,7 +227,7 @@ class ProfilePage extends StatelessWidget {
                           ),
                           TextButton(
                             onPressed: () {},
-                    child: Text(
+                            child: Text(
                               'See All',
                               style: GoogleFonts.openSans(
                                 color: Colors.grey[400],
@@ -279,13 +307,13 @@ class ProfilePage extends StatelessWidget {
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
+                          children: [
+                            Text(
                               "Recent Reviewed",
-                          style: GoogleFonts.openSans(
+                              style: GoogleFonts.openSans(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                                color: Colors.white,
                               ),
                             ),
                             TextButton(
@@ -345,8 +373,8 @@ class ProfilePage extends StatelessWidget {
                                           ),
                                         ),
                                       ],
-                        ),
-                        const SizedBox(height: 4),
+                                    ),
+                                    const SizedBox(height: 4),
                                     Row(
                                       children: List.generate(
                                         5,
@@ -362,11 +390,11 @@ class ProfilePage extends StatelessWidget {
                                       ),
                                     ),
                                     const SizedBox(height: 8),
-                        Text(
+                                    Text(
                                       profileController.recentlyWatched[0].overview,
-                          style: GoogleFonts.openSans(
+                                      style: GoogleFonts.openSans(
                                         color: Colors.grey[300],
-                            fontSize: 14,
+                                        fontSize: 14,
                                       ),
                                       maxLines: 3,
                                       overflow: TextOverflow.ellipsis,
@@ -405,8 +433,8 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ],
               ),
-          );
-        }),
+            );
+          }),
       ),
       bottomNavigationBar: const CustomBottomNav(currentIndex: 3),
     );
@@ -414,10 +442,10 @@ class ProfilePage extends StatelessWidget {
 
   Widget _buildStatItem(String value, String label, Color color) {
     return Column(
-          children: [
-            Text(
+      children: [
+        Text(
           value,
-              style: GoogleFonts.openSans(
+          style: GoogleFonts.openSans(
             fontSize: 24,
             fontWeight: FontWeight.bold,
             color: color,
