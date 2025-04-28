@@ -47,16 +47,25 @@ class DrawerMenu extends StatelessWidget {
                   CircleAvatar(
                     radius: 20,
                     backgroundColor: Colors.grey[800],
+                    backgroundImage: authController.currentUser?.profileImage != null
+                      ? NetworkImage(authController.currentUser!.profileImage!)
+                      : null,
                     child: Obx(() {
                       final user = authController.currentUser;
-                      return Text(
-                        user?.username.substring(0, 1).toUpperCase() ?? 'G',
-                        style: GoogleFonts.openSans(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      );
+                      if (user?.profileImage == null) {
+                        return Text(
+                          user?.name.isNotEmpty == true
+                            ? user!.name[0].toUpperCase()
+                            : 'G',
+                          style: GoogleFonts.openSans(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        );
+                      } else {
+                        return const SizedBox.shrink();
+                      }
                     }),
                   ),
                   const SizedBox(width: 12),
@@ -68,7 +77,7 @@ class DrawerMenu extends StatelessWidget {
                         Obx(() {
                           final user = authController.currentUser;
                           return Text(
-                            user?.username ?? 'Guest',
+                            user?.name ?? 'Guest',
                             style: GoogleFonts.openSans(
                               color: Colors.white,
                               fontSize: 15,
@@ -78,7 +87,7 @@ class DrawerMenu extends StatelessWidget {
                           );
                         }),
                         Text(
-                          '@kyran_d',
+                          '@${authController.currentUser?.username ?? ''}',
                           style: GoogleFonts.openSans(
                             color: Colors.grey[400],
                             fontSize: 13,
