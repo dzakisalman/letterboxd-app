@@ -47,9 +47,19 @@ class HomeController extends GetxController {
         TMDBService.getTrendingMovies(),
       ]);
       
+      print('[Home] Popular movies type: ${results[0].runtimeType}');
+      print('[Home] Popular movies length: ${results[0].length}');
+      print('[Home] First popular movie type: ${results[0].isNotEmpty ? results[0][0].runtimeType : 'empty'}');
+      
+      print('[Home] Trending movies type: ${results[1].runtimeType}');
+      print('[Home] Trending movies length: ${results[1].length}');
+      print('[Home] First trending movie type: ${results[1].isNotEmpty ? results[1][0].runtimeType : 'empty'}');
+      
       popularMovies.value = results[0];
       trendingMovies.value = results[1];
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('[Home] Error loading movies: $e');
+      print('[Home] Stack trace: $stackTrace');
       Get.snackbar(
         'Error',
         'Failed to load movies: ${e.toString()}',

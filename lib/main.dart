@@ -13,17 +13,29 @@ void main() async {
   // Load environment variables
   await dotenv.load(fileName: ".env");
   
-  // Check if user has seen onboarding
+  // Check if user has seen onboarding and is logged in
   final prefs = await SharedPreferences.getInstance();
   final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+  final isLoggedIn = prefs.getString('user') != null && prefs.getString('session_id') != null;
 
-  runApp(MyApp(hasSeenOnboarding: hasSeenOnboarding));
+  // If user is not logged in, force show onboarding
+  final shouldShowOnboarding = !isLoggedIn || !hasSeenOnboarding;
+
+  runApp(MyApp(
+    hasSeenOnboarding: !shouldShowOnboarding,
+    isLoggedIn: isLoggedIn,
+  ));
 }
 
 class MyApp extends StatelessWidget {
   final bool hasSeenOnboarding;
+  final bool isLoggedIn;
 
-  const MyApp({super.key, required this.hasSeenOnboarding});
+  const MyApp({
+    super.key, 
+    required this.hasSeenOnboarding,
+    required this.isLoggedIn,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +47,19 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.dark,
-      initialRoute: hasSeenOnboarding ? AppRoutes.login : AppRoutes.onboarding,
+      initialRoute: _getInitialRoute(),
       getPages: AppRoutes.pages,
       debugShowCheckedModeBanner: false,
     );
+  }
+
+  String _getInitialRoute() {
+    if (!hasSeenOnboarding) {
+      return AppRoutes.onboarding;
+    }
+    if (isLoggedIn) {
+      return AppRoutes.home;
+    }
+    return AppRoutes.login;
   }
 }

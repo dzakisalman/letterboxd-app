@@ -95,11 +95,49 @@ class TMDBService {
   }
 
   static Future<List<Movie>> getPopularMovies() async {
+    print('\n[TMDB] ===== Getting Popular Movies =====');
     return _makeRequest<List<Movie>>(
       endpoint: '/movie/popular?api_key=$_apiKey&language=en-US&page=1',
-      parser: (data) => (data['results'] as List)
-          .map((movie) => Movie.fromJson(movie))
-          .toList(),
+      parser: (data) {
+        print('[TMDB] Raw API Response:');
+        print('[TMDB] - Type: ${data.runtimeType}');
+        print('[TMDB] - Keys: ${data.keys.join(', ')}');
+        
+        final results = data['results'] as List;
+        print('[TMDB] Results:');
+        print('[TMDB] - Type: ${results.runtimeType}');
+        print('[TMDB] - Length: ${results.length}');
+        
+        if (results.isNotEmpty) {
+          print('[TMDB] First item:');
+          print('[TMDB] - Type: ${results[0].runtimeType}');
+          print('[TMDB] - Keys: ${(results[0] as Map).keys.join(', ')}');
+        }
+        
+        // Convert each Map to Movie object
+        print('[TMDB] Converting to Movie objects...');
+        final movies = results.map((movieData) {
+          try {
+            final movie = Movie.fromJson(movieData as Map<String, dynamic>);
+            print('[TMDB] Successfully converted movie: ${movie.title}');
+            return movie;
+          } catch (e) {
+            print('[TMDB] Error converting movie: $e');
+            print('[TMDB] Movie data: $movieData');
+            rethrow;
+          }
+        }).toList();
+        
+        print('[TMDB] Conversion complete:');
+        print('[TMDB] - Movies type: ${movies.runtimeType}');
+        print('[TMDB] - Movies count: ${movies.length}');
+        if (movies.isNotEmpty) {
+          print('[TMDB] - First movie: ${movies[0].title}');
+        }
+        print('[TMDB] ===== End Popular Movies =====\n');
+        
+        return movies;
+      },
     );
   }
 
@@ -148,11 +186,49 @@ class TMDBService {
   }
 
   static Future<List<Movie>> getTrendingMovies() async {
+    print('\n[TMDB] ===== Getting Trending Movies =====');
     return _makeRequest<List<Movie>>(
       endpoint: '/trending/movie/week?api_key=$_apiKey&language=en-US',
-      parser: (data) => (data['results'] as List)
-          .map((movie) => Movie.fromJson(movie))
-          .toList(),
+      parser: (data) {
+        print('[TMDB] Raw API Response:');
+        print('[TMDB] - Type: ${data.runtimeType}');
+        print('[TMDB] - Keys: ${data.keys.join(', ')}');
+        
+        final results = data['results'] as List;
+        print('[TMDB] Results:');
+        print('[TMDB] - Type: ${results.runtimeType}');
+        print('[TMDB] - Length: ${results.length}');
+        
+        if (results.isNotEmpty) {
+          print('[TMDB] First item:');
+          print('[TMDB] - Type: ${results[0].runtimeType}');
+          print('[TMDB] - Keys: ${(results[0] as Map).keys.join(', ')}');
+        }
+        
+        // Convert each Map to Movie object
+        print('[TMDB] Converting to Movie objects...');
+        final movies = results.map((movieData) {
+          try {
+            final movie = Movie.fromJson(movieData as Map<String, dynamic>);
+            print('[TMDB] Successfully converted movie: ${movie.title}');
+            return movie;
+          } catch (e) {
+            print('[TMDB] Error converting movie: $e');
+            print('[TMDB] Movie data: $movieData');
+            rethrow;
+          }
+        }).toList();
+        
+        print('[TMDB] Conversion complete:');
+        print('[TMDB] - Movies type: ${movies.runtimeType}');
+        print('[TMDB] - Movies count: ${movies.length}');
+        if (movies.isNotEmpty) {
+          print('[TMDB] - First movie: ${movies[0].title}');
+        }
+        print('[TMDB] ===== End Trending Movies =====\n');
+        
+        return movies;
+      },
     );
   }
 

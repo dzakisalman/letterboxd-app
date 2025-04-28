@@ -22,23 +22,34 @@ class AuthController extends GetxController {
   }
 
   Future<void> _loadUser() async {
-    final prefs = await _prefs;
-    final userJson = prefs.getString('user');
-    final sessionId = prefs.getString('session_id');
-    
-    if (userJson != null && sessionId != null) {
-      try {
+    try {
+      final prefs = await _prefs;
+      final userJson = prefs.getString('user');
+      final sessionId = prefs.getString('session_id');
+      
+      if (userJson != null && sessionId != null) {
         final userMap = json.decode(userJson) as Map<String, dynamic>;
         _currentUser.value = User.fromJson(userMap);
         _sessionId = sessionId;
-      } catch (e) {
-        Get.snackbar(
-          'Error',
-          'Failed to load user data: ${e.toString()}',
-          snackPosition: SnackPosition.BOTTOM,
-        );
       }
+    } catch (e) {
+      // If there's an error loading the user, clear the stored data
+      await _clearStoredData();
+      Get.snackbar(
+        'Error',
+        'Failed to load user data: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
+  }
+
+  Future<void> _clearStoredData() async {
+    final prefs = await _prefs;
+    await prefs.remove('user');
+    await prefs.remove('session_id');
+    await prefs.remove('has_seen_onboarding'); // Clear onboarding status
+    _currentUser.value = null;
+    _sessionId = null;
   }
 
   Future<bool> login(String username, String password) async {
@@ -99,6 +110,7 @@ class AuthController extends GetxController {
 
       return true;
     } catch (e) {
+      await _clearStoredData();
       Get.snackbar(
         'Error',
         'Failed to login: ${e.toString()}',
@@ -116,14 +128,8 @@ class AuthController extends GetxController {
         await TMDBService.deleteSession(_sessionId!);
       }
       
-      _currentUser.value = null;
-      _sessionId = null;
-      
-      final prefs = await _prefs;
-      await prefs.remove('user');
-      await prefs.remove('session_id');
-      
-      Get.offAllNamed('/login');
+      await _clearStoredData();
+      Get.offAllNamed('/onboarding'); // Navigate to onboarding instead of login
     } catch (e) {
       Get.snackbar(
         'Error',
