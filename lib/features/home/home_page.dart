@@ -63,10 +63,17 @@ class HomePage extends StatelessWidget {
                         child: CircleAvatar(
                           radius: 20,
                           backgroundColor: Colors.grey[800],
-                          child: Text(
-                            authController.currentUser?.username.substring(0, 1).toUpperCase() ?? 'G',
-                            style: const TextStyle(color: Colors.white),
-                          ),
+                          backgroundImage: authController.currentUser?.profileImage != null
+                            ? NetworkImage(authController.currentUser!.profileImage!)
+                            : null,
+                          child: authController.currentUser?.profileImage == null
+                            ? Text(
+                                (authController.currentUser?.name.isNotEmpty == true
+                                  ? authController.currentUser!.name[0].toUpperCase()
+                                  : 'G'),
+                                style: const TextStyle(color: Colors.white),
+                              )
+                            : null,
                         ),
                       ),
                     ],
@@ -91,7 +98,7 @@ class HomePage extends StatelessWidget {
                               ),
                             ),
                             TextSpan(
-                              text: '${authController.currentUser?.username ?? 'Guest'}!',
+                              text: '${authController.currentUser?.name ?? 'Guest'}!',
                               style: GoogleFonts.openSans(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
