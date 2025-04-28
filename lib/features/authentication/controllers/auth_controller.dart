@@ -80,6 +80,7 @@ class AuthController extends GetxController {
       }
       final user = User(
         id: accountDetails['id'].toString(),
+        name: accountDetails['name'] ?? '',
         username: accountDetails['username'],
         email: accountDetails['email'] ?? '',
         profileImage: profileImageUrl,
