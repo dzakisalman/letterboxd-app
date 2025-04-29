@@ -44,7 +44,7 @@ class ExplorePage extends StatelessWidget {
                         child: SvgPicture.asset(
                           'assets/icons/close.svg',
                           colorFilter: ColorFilter.mode(
-                            Colors.grey[600]!,
+                            Colors.white.withOpacity(0.5),
                             BlendMode.srcIn,
                           ),
                           width: 20,
@@ -68,7 +68,7 @@ class ExplorePage extends StatelessWidget {
                   decoration: InputDecoration(
                     hintText: 'Search movies...',
                     hintStyle: GoogleFonts.openSans(
-                      color: Colors.grey[600],
+                      color: Colors.white.withOpacity(0.5),
                       fontSize: 14,
                     ),
                     border: InputBorder.none,
@@ -92,7 +92,7 @@ class ExplorePage extends StatelessWidget {
                     child: SvgPicture.asset(
                       'assets/icons/search.svg',
                       colorFilter: ColorFilter.mode(
-                        Colors.grey[600]!,
+                        Colors.white.withOpacity(0.5),
                         BlendMode.srcIn,
                       ),
                       width: 20,
@@ -194,7 +194,7 @@ class ExplorePage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         SvgPicture.asset(
-                          'assets/icons/search.svg',
+                          'assets/icons/explore.svg',
                           colorFilter: ColorFilter.mode(
                             Colors.grey[600]!,
                             BlendMode.srcIn,

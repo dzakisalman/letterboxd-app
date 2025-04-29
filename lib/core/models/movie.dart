@@ -6,11 +6,11 @@ class Movie {
   final String overview;
   final String? posterPath;
   final String? backdropPath;
-  final double voteAverage;
-  final int voteCount;
+  final double? voteAverage;
+  final int? voteCount;
   final String releaseDate;
   final List<String> genres;
-  final int runtime;
+  final int? runtime;
   final double? userRating;
 
   Movie({
@@ -19,11 +19,11 @@ class Movie {
     required this.overview,
     this.posterPath,
     this.backdropPath,
-    required this.voteAverage,
-    required this.voteCount,
+    this.voteAverage,
+    this.voteCount,
     required this.releaseDate,
     this.genres = const [],
-    this.runtime = 0,
+    this.runtime,
     this.userRating,
   });
 
@@ -37,19 +37,19 @@ class Movie {
 
   factory Movie.fromJson(Map<String, dynamic> json) {
     return Movie(
-      id: json['id'],
-      title: json['title'],
-      overview: json['overview'],
+      id: json['id'] ?? 0,
+      title: json['title'] ?? '',
+      overview: json['overview'] ?? '',
       posterPath: json['poster_path'],
       backdropPath: json['backdrop_path'],
-      voteAverage: (json['vote_average'] as num).toDouble(),
+      voteAverage: json['vote_average'] != null ? (json['vote_average'] as num).toDouble() : null,
       voteCount: json['vote_count'],
       releaseDate: json['release_date'] ?? '',
       genres: (json['genres'] as List?)
           ?.map((genre) => genre['name'] as String)
           .toList() ??
         [],
-      runtime: json['runtime'] ?? 0,
+      runtime: json['runtime'],
       userRating: json['rating'] != null ? (json['rating'] as num).toDouble() : null,
     );
   }
