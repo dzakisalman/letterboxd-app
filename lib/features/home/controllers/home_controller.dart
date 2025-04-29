@@ -16,6 +16,35 @@ class HomeController extends GetxController {
     _initializeData();
   }
 
+  Future<void> refreshData() async {
+    try {
+      isLoading.value = true;
+      
+      // Clear existing data
+      popularMovies.clear();
+      trendingMovies.clear();
+      popularLists.clear();
+      recentReviews.clear();
+      
+      // Load all data in parallel
+      await Future.wait([
+        loadMovies(),
+        loadLists(),
+      ]);
+      
+      // Load reviews after movies are loaded
+      await loadReviews();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to refresh data: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   Future<void> _initializeData() async {
     try {
       isLoading.value = true;
