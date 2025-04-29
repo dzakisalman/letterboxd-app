@@ -1,27 +1,340 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:letterboxd/core/widgets/custom_bottom_nav.dart';
+import 'package:letterboxd/features/explore/controllers/explore_controller.dart';
+import 'package:letterboxd/routes/app_routes.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:letterboxd/core/models/movie.dart';
 
 class ExplorePage extends StatelessWidget {
   const ExplorePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(ExploreController());
+    final textController = TextEditingController();
+
     return Scaffold(
       backgroundColor: const Color(0xFF1F1D36),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Explore',
-          style: TextStyle(color: Colors.white),
+        title: Container(
+          height: 40,
+          decoration: BoxDecoration(
+            color: const Color(0xFF3D3B54),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            children: [
+              // Clear button
+              Obx(() => controller.searchQuery.isNotEmpty
+                ? Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        controller.clearSearch();
+                        textController.clear();
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: SvgPicture.asset(
+                          'assets/icons/close.svg',
+                          colorFilter: ColorFilter.mode(
+                            Colors.grey[600]!,
+                            BlendMode.srcIn,
+                          ),
+                          width: 20,
+                          height: 20,
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox(width: 8),
+              ),
+              // Search input
+              Expanded(
+                child: TextField(
+                  controller: textController,
+                  onChanged: controller.updateSearchQuery,
+                  onSubmitted: (_) => controller.performSearch(),
+                  style: GoogleFonts.openSans(
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Search movies...',
+                    hintStyle: GoogleFonts.openSans(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                    border: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                    isDense: true,
+                    filled: true,
+                    fillColor: Colors.transparent,
+                  ),
+                ),
+              ),
+              // Search button
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: controller.performSearch,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: SvgPicture.asset(
+                      'assets/icons/search.svg',
+                      colorFilter: ColorFilter.mode(
+                        Colors.grey[600]!,
+                        BlendMode.srcIn,
+                      ),
+                      width: 20,
+                      height: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      body: const Center(
-        child: Text(
-          'Explore Page',
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        if (controller.hasError.value) {
+          return Center(
+            child: Text(
+              controller.errorMessage.value,
+              style: const TextStyle(color: Colors.white),
+            ),
+          );
+        }
+
+        if (controller.searchQuery.isEmpty) {
+          return Column(
+            children: [
+              if (controller.searchHistory.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Recent Searches',
+                        style: GoogleFonts.openSans(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: controller.clearHistory,
+                        child: Text(
+                          'Clear All',
+                          style: GoogleFonts.openSans(
+                            color: Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  itemCount: controller.searchHistory.length,
+                  itemBuilder: (context, index) {
+                    final query = controller.searchHistory[index];
+                    return ListTile(
+                      title: Text(
+                        query,
+                        style: GoogleFonts.openSans(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                      ),
+                      trailing: IconButton(
+                        icon: SvgPicture.asset(
+                          'assets/icons/close.svg',
+                          colorFilter: ColorFilter.mode(
+                            Colors.grey[600]!,
+                            BlendMode.srcIn,
+                          ),
+                          width: 20,
+                          height: 20,
+                        ),
+                        onPressed: () => controller.removeFromHistory(query),
+                      ),
+                      onTap: () {
+                        textController.text = query;
+                        controller.updateSearchQuery(query);
+                        controller.performSearch();
+                      },
+                    );
+                  },
+                ),
+              ],
+              if (controller.searchHistory.isEmpty)
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/icons/search.svg',
+                          colorFilter: ColorFilter.mode(
+                            Colors.grey[600]!,
+                            BlendMode.srcIn,
+                          ),
+                          width: 48,
+                          height: 48,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Search for movies',
+                          style: GoogleFonts.openSans(
+                            color: Colors.grey[600],
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          );
+        }
+
+        if (controller.hasSearched.value && controller.searchResults.isEmpty) {
+          return Center(
+            child: Text(
+              'No results found for "${controller.searchQuery.value}"',
+              style: const TextStyle(color: Colors.white),
+            ),
+          );
+        }
+
+        if (!controller.hasSearched.value) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SvgPicture.asset(
+                  'assets/icons/search.svg',
+                  colorFilter: ColorFilter.mode(
+                    Colors.grey[600]!,
+                    BlendMode.srcIn,
+                  ),
+                  width: 48,
+                  height: 48,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Press search to find movies',
+                  style: GoogleFonts.openSans(
+                    color: Colors.grey[600],
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: controller.searchResults.length,
+          itemBuilder: (context, index) {
+            final movie = controller.searchResults[index];
+            return GestureDetector(
+              onTap: () {
+                Get.toNamed(AppRoutes.movieDetailPath(movie.id.toString()));
+              },
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: CachedNetworkImage(
+                        imageUrl: movie.posterUrl,
+                        width: 100,
+                        height: 150,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: Colors.grey[900],
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.grey[900],
+                          child: const Icon(
+                            Icons.error_outline,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            movie.title,
+                            style: GoogleFonts.openSans(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          if (movie.releaseDate.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              movie.releaseDate.split('-')[0],
+                              style: TextStyle(
+                                color: Colors.grey[400],
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                          if (movie.overview.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              movie.overview,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.grey[400],
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      }),
       bottomNavigationBar: const CustomBottomNav(currentIndex: 1),
     );
   }
