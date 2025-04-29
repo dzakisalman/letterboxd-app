@@ -450,11 +450,26 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    _buildStat('assets/icons/eyes.svg', '40k'),
+                                    Obx(() => _buildStat(
+                                      'assets/icons/eyes.svg', 
+                                      '40k',
+                                      isActive: controller.userRating.value > 0,
+                                      activeColor: Colors.green,
+                                    )),
                                     const SizedBox(width: 16),
-                                    _buildStat('assets/icons/fav.svg', '30k'),
+                                    Obx(() => _buildStat(
+                                      'assets/icons/fav.svg', 
+                                      '30k',
+                                      isActive: controller.isFavorite.value,
+                                      activeColor: Colors.red,
+                                    )),
                                     const SizedBox(width: 16),
-                                    _buildStat('assets/icons/listed.svg', '12k'),
+                                    Obx(() => _buildStat(
+                                      'assets/icons/listed.svg', 
+                                      '12k',
+                                      isActive: controller.isInList.value,
+                                      activeColor: Colors.blue,
+                                    )),
                                   ],
                                 ),
                               ],
@@ -633,13 +648,15 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     );
   }
 
-  Widget _buildStat(String svgPath, String count) {
+  Widget _buildStat(String svgPath, String count, {bool isActive = false, Color activeColor = Colors.white70}) {
+    final color = isActive ? activeColor : Colors.white70;
+    
     return Column(
       children: [
         SvgPicture.asset(
           svgPath,
-          colorFilter: const ColorFilter.mode(
-            Colors.white70,
+          colorFilter: ColorFilter.mode(
+            color,
             BlendMode.srcIn,
           ),
           width: 20,
@@ -648,8 +665,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
         const SizedBox(height: 4),
         Text(
           count,
-          style: const TextStyle(
-            color: Colors.white70,
+          style: TextStyle(
+            color: color,
             fontSize: 12,
           ),
         ),
@@ -664,11 +681,60 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildActionButton(
-              'Rate or Review',
-              onPressed: controller.navigateToReviewForm,
-              svgPath: 'assets/icons/queue.svg',
-            ),
+            Obx(() {
+              if (controller.userRating.value > 0) {
+                final rating = controller.userRating.value;
+                final fullStars = rating.floor();
+                final hasHalfStar = rating - fullStars >= 0.5;
+                
+                return Container(
+                  width: MediaQuery.of(context).size.width * 0.35,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE9A6A6),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ...List.generate(fullStars, (index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 1),
+                          child: SvgPicture.asset(
+                            'assets/icons/star.svg',
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xFF1F1D36),
+                              BlendMode.srcIn,
+                            ),
+                            width: 14,
+                            height: 14,
+                          ),
+                        );
+                      }),
+                      if (hasHalfStar)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 1),
+                          child: SvgPicture.asset(
+                            'assets/icons/halfstar.svg',
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xFF1F1D36),
+                              BlendMode.srcIn,
+                            ),
+                            width: 14,
+                            height: 14,
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              } else {
+                return _buildActionButton(
+                  'Rate or Review',
+                  onPressed: controller.navigateToReviewForm,
+                  svgPath: 'assets/icons/queue.svg',
+                );
+              }
+            }),
             const SizedBox(height: 8),
             _buildActionButton(
               'Add to Lists',
@@ -743,56 +809,56 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   }
 
   Widget _buildRatingsSection() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Ratings',
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 14,
-              fontWeight: FontWeight.w300,
+    final movie = controller.movie.value!;
+    final tmdbRating = movie.voteAverage != null ? (movie.voteAverage! / 2).toStringAsFixed(1) : 'N/A';
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Ratings',
+          style: TextStyle(
+            color: Colors.grey[400],
+            fontSize: 14,
+            fontWeight: FontWeight.w300,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // Left star
+            Padding(
+              padding: const EdgeInsets.only(bottom: 2),
+              child: SvgPicture.asset(
+                'assets/icons/star.svg',
+                colorFilter: const ColorFilter.mode(
+                  Colors.red,
+                  BlendMode.srcIn,
+                ),
+                width: 10,
+                height: 10,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              // Left star
-              Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: SvgPicture.asset(
-                  'assets/icons/star.svg',
-                  colorFilter: const ColorFilter.mode(
-                    Colors.red,
-                    BlendMode.srcIn,
-                  ),
-                  width: 10,
-                  height: 10,
-                ),
-              ),
-              const SizedBox(width: 4),
-              // Rating bars
-              Expanded(
-                child: SizedBox(
-                  height: 80,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: List.generate(
-                      8,
-                      (index) => Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 1),
-                          height: [20, 30, 40, 50, 60, 70, 80, 90][index]
-                                  .toDouble() *
-                              0.7,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.5),
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(2),
-                            ),
+            const SizedBox(width: 4),
+            // Rating bars
+            Expanded(
+              child: SizedBox(
+                height: 80,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: List.generate(
+                    8,
+                    (index) => Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 1),
+                        height: [20, 30, 40, 50, 60, 70, 80, 90][index]
+                                .toDouble() *
+                            0.7,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.5),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(2),
                           ),
                         ),
                       ),
@@ -800,44 +866,44 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              // Rating number and stars
-              Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '4.4',
-                    style: TextStyle(
-                      color: Colors.pink[200],
-                      fontSize: 24,
-                      fontWeight: FontWeight.w300,
-                    ),
+            ),
+            const SizedBox(width: 12),
+            // Rating number and stars
+            Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  tmdbRating,
+                  style: TextStyle(
+                    color: Colors.pink[200],
+                    fontSize: 24,
+                    fontWeight: FontWeight.w300,
                   ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: List.generate(
-                      5,
-                      (index) => Padding(
-                        padding: const EdgeInsets.only(left: 1),
-                        child: SvgPicture.asset(
-                          'assets/icons/star.svg',
-                          colorFilter: const ColorFilter.mode(
-                            Colors.red,
-                            BlendMode.srcIn,
-                          ),
-                          width: 8,
-                          height: 8,
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: List.generate(
+                    5,
+                    (index) => Padding(
+                      padding: const EdgeInsets.only(left: 1),
+                      child: SvgPicture.asset(
+                        'assets/icons/star.svg',
+                        colorFilter: const ColorFilter.mode(
+                          Colors.red,
+                          BlendMode.srcIn,
                         ),
+                        width: 8,
+                        height: 8,
                       ),
                     ),
                   ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

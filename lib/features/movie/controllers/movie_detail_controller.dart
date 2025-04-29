@@ -16,6 +16,9 @@ class MovieDetailController extends GetxController {
   final RxBool isInWatchlist = false.obs;
   final RxDouble userRating = 0.0.obs;
   final RxString movieDirector = ''.obs;
+  final RxBool isWatched = false.obs;
+  final RxBool isFavorite = false.obs;
+  final RxBool isInList = false.obs;
 
   Future<void> loadMovieDetails(String movieId) async {
     try {
@@ -53,6 +56,9 @@ class MovieDetailController extends GetxController {
       final recommendedData = await TMDBService.getRecommendedMovies(movieIdInt);
       recommendedMovies.value = recommendedData;
 
+      // Check movie status
+      await checkMovieStatus(movieIdInt);
+
     } catch (e) {
       Get.snackbar(
         'Error',
@@ -61,6 +67,21 @@ class MovieDetailController extends GetxController {
       );
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> checkMovieStatus(int movieId) async {
+    try {
+      const accountId = 1; // TODO: Get from auth
+      
+      // Check if movie is rated
+      final accountStates = await TMDBService.getAccountStates(movieId);
+      isWatched.value = accountStates['rated'] != null; // Only show watched for rated movies
+      isFavorite.value = accountStates['favorite'] == true;
+      isInList.value = accountStates['watchlist'] == true;
+      userRating.value = accountStates['rated'] != null ? (accountStates['rated']['value'] as num).toDouble() / 2 : 0.0;
+    } catch (e) {
+      print('Error checking movie status: $e');
     }
   }
 
@@ -98,6 +119,8 @@ class MovieDetailController extends GetxController {
         final success = await TMDBService.removeFromWatchlist(accountId, movieId);
         if (success) {
           isInWatchlist.value = false;
+          // Refresh movie status after removing from watchlist
+          await checkMovieStatus(movieId);
           Get.snackbar(
             'Success',
             'Removed from watchlist',
@@ -108,6 +131,8 @@ class MovieDetailController extends GetxController {
         final success = await TMDBService.addToWatchlist(accountId, movieId);
         if (success) {
           isInWatchlist.value = true;
+          // Refresh movie status after adding to watchlist
+          await checkMovieStatus(movieId);
           Get.snackbar(
             'Success',
             'Added to watchlist',
@@ -131,6 +156,8 @@ class MovieDetailController extends GetxController {
       final success = await TMDBService.rateMovie(movie.value!.id, rating * 2); // Convert 5-star to 10-point scale
       if (success) {
         userRating.value = rating;
+        // Refresh movie status after rating
+        await checkMovieStatus(movie.value!.id);
         Get.snackbar(
           'Success',
           'Rating submitted',
@@ -153,6 +180,8 @@ class MovieDetailController extends GetxController {
       final success = await TMDBService.deleteRating(movie.value!.id);
       if (success) {
         userRating.value = 0;
+        // Refresh movie status after deleting rating
+        await checkMovieStatus(movie.value!.id);
         Get.snackbar(
           'Success',
           'Rating removed',
@@ -163,6 +192,46 @@ class MovieDetailController extends GetxController {
       Get.snackbar(
         'Error',
         'Failed to remove rating: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  Future<void> toggleFavorite() async {
+    try {
+      if (movie.value == null) return;
+
+      final movieId = movie.value!.id;
+
+      if (isFavorite.value) {
+        final success = await TMDBService.removeFromFavorites(movieId);
+        if (success) {
+          isFavorite.value = false;
+          // Refresh movie status after removing from favorites
+          await checkMovieStatus(movieId);
+          Get.snackbar(
+            'Success',
+            'Removed from favorites',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        }
+      } else {
+        final success = await TMDBService.addToFavorites(movieId);
+        if (success) {
+          isFavorite.value = true;
+          // Refresh movie status after adding to favorites
+          await checkMovieStatus(movieId);
+          Get.snackbar(
+            'Success',
+            'Added to favorites',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        }
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to update favorites: ${e.toString()}',
         snackPosition: SnackPosition.BOTTOM,
       );
     }

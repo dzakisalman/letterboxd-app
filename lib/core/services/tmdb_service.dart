@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:letterboxd/core/models/movie.dart';
 import 'package:letterboxd/core/services/api_service.dart';
+import 'package:get/get.dart';
+import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
 
 class TMDBService {
   static const String _baseUrl = 'https://api.themoviedb.org/3';
@@ -478,6 +480,67 @@ class TMDBService {
       return true;
     } else {
       throw Exception('Failed to mark movie as favorite');
+    }
+  }
+
+  static Future<Map<String, dynamic>> getAccountStates(int movieId) async {
+    final authController = Get.find<AuthController>();
+    final sessionId = authController.sessionId;
+    
+    if (sessionId == null) {
+      return {
+        'rated': null,
+        'watchlist': false,
+        'favorite': false,
+      };
+    }
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/movie/$movieId/account_states?api_key=$_apiKey&session_id=$sessionId'),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to get account states');
+    }
+  }
+
+  static Future<bool> addToFavorites(int movieId) async {
+    const accountId = 1; // TODO: Get from auth
+    final response = await http.post(
+      Uri.parse('$_baseUrl/account/$accountId/favorite?api_key=$_apiKey'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'media_type': 'movie',
+        'media_id': movieId,
+        'favorite': true,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception('Failed to add movie to favorites');
+    }
+  }
+
+  static Future<bool> removeFromFavorites(int movieId) async {
+    const accountId = 1; // TODO: Get from auth
+    final response = await http.post(
+      Uri.parse('$_baseUrl/account/$accountId/favorite?api_key=$_apiKey'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'media_type': 'movie',
+        'media_id': movieId,
+        'favorite': false,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception('Failed to remove movie from favorites');
     }
   }
 
