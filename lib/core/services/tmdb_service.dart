@@ -46,7 +46,13 @@ class TMDBService {
       if (DateTime.now().difference(cacheEntry.timestamp) < _cacheDuration) {
         print('[TMDB API] Cache hit: $endpoint');
         print('[TMDB API] Cache age: ${DateTime.now().difference(cacheEntry.timestamp)}');
-        return cacheEntry.data as T;
+        final cachedData = cacheEntry.data;
+        if (cachedData is T) {
+          return cachedData;
+        } else {
+          print('[TMDB API] Cache data type mismatch, clearing cache');
+          _cache.remove(endpoint);
+        }
       }
       print('[TMDB API] Cache expired: $endpoint');
     }
@@ -67,7 +73,14 @@ class TMDBService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        if (data is! Map<String, dynamic>) {
+          throw FormatException('API response is not a Map<String, dynamic>');
+        }
+        
         final result = parser(data);
+        if (result is! T) {
+          throw FormatException('Parser returned wrong type: ${result.runtimeType}, expected: $T');
+        }
         
         // Cache the result
         if (useCache) {
@@ -87,8 +100,11 @@ class TMDBService {
       
       // If request fails and we have cached data, return it
       if (useCache && _cache.containsKey(endpoint)) {
-        print('[TMDB API] Returning cached data due to error');
-        return _cache[endpoint]!.data as T;
+        final cachedData = _cache[endpoint]!.data;
+        if (cachedData is T) {
+          print('[TMDB API] Returning cached data due to error');
+          return cachedData;
+        }
       }
       
       print('[TMDB API] Request failed with error: ${e.toString()}\n');
@@ -101,44 +117,31 @@ class TMDBService {
     return _makeRequest<List<Movie>>(
       endpoint: '/movie/popular?api_key=$_apiKey&language=en-US&page=1',
       parser: (data) {
-        print('[TMDB] Raw API Response:');
-        print('[TMDB] - Type: ${data.runtimeType}');
-        print('[TMDB] - Keys: ${data.keys.join(', ')}');
-        
-        final results = data['results'] as List;
-        print('[TMDB] Results:');
-        print('[TMDB] - Type: ${results.runtimeType}');
-        print('[TMDB] - Length: ${results.length}');
-        
-        if (results.isNotEmpty) {
-          print('[TMDB] First item:');
-          print('[TMDB] - Type: ${results[0].runtimeType}');
-          print('[TMDB] - Keys: ${(results[0] as Map).keys.join(', ')}');
-        }
-        
-        // Convert each Map to Movie object
-        print('[TMDB] Converting to Movie objects...');
-        final movies = results.map((movieData) {
-          try {
-            final movie = Movie.fromJson(movieData as Map<String, dynamic>);
-            print('[TMDB] Successfully converted movie: ${movie.title}');
-            return movie;
-          } catch (e) {
-            print('[TMDB] Error converting movie: $e');
-            print('[TMDB] Movie data: $movieData');
-            rethrow;
+        try {
+          final results = data['results'] as List;
+          final movies = <Movie>[];
+          
+          for (var movieData in results) {
+            if (movieData is! Map<String, dynamic>) {
+              print('[TMDB] Invalid movie data format: ${movieData.runtimeType}');
+              continue;
+            }
+            
+            try {
+              final movie = Movie.fromJson(movieData);
+              movies.add(movie);
+            } catch (e) {
+              print('[TMDB] Error converting movie: $e');
+              print('[TMDB] Movie data: $movieData');
+            }
           }
-        }).toList();
-        
-        print('[TMDB] Conversion complete:');
-        print('[TMDB] - Movies type: ${movies.runtimeType}');
-        print('[TMDB] - Movies count: ${movies.length}');
-        if (movies.isNotEmpty) {
-          print('[TMDB] - First movie: ${movies[0].title}');
+          
+          print('[TMDB] Successfully converted ${movies.length} movies');
+          return movies;
+        } catch (e) {
+          print('[TMDB] Error parsing popular movies: $e');
+          throw FormatException('Failed to parse popular movies: $e');
         }
-        print('[TMDB] ===== End Popular Movies =====\n');
-        
-        return movies;
       },
     );
   }
@@ -192,44 +195,31 @@ class TMDBService {
     return _makeRequest<List<Movie>>(
       endpoint: '/trending/movie/week?api_key=$_apiKey&language=en-US',
       parser: (data) {
-        print('[TMDB] Raw API Response:');
-        print('[TMDB] - Type: ${data.runtimeType}');
-        print('[TMDB] - Keys: ${data.keys.join(', ')}');
-        
-        final results = data['results'] as List;
-        print('[TMDB] Results:');
-        print('[TMDB] - Type: ${results.runtimeType}');
-        print('[TMDB] - Length: ${results.length}');
-        
-        if (results.isNotEmpty) {
-          print('[TMDB] First item:');
-          print('[TMDB] - Type: ${results[0].runtimeType}');
-          print('[TMDB] - Keys: ${(results[0] as Map).keys.join(', ')}');
-        }
-        
-        // Convert each Map to Movie object
-        print('[TMDB] Converting to Movie objects...');
-        final movies = results.map((movieData) {
-          try {
-            final movie = Movie.fromJson(movieData as Map<String, dynamic>);
-            print('[TMDB] Successfully converted movie: ${movie.title}');
-            return movie;
-          } catch (e) {
-            print('[TMDB] Error converting movie: $e');
-            print('[TMDB] Movie data: $movieData');
-            rethrow;
+        try {
+          final results = data['results'] as List;
+          final movies = <Movie>[];
+          
+          for (var movieData in results) {
+            if (movieData is! Map<String, dynamic>) {
+              print('[TMDB] Invalid movie data format: ${movieData.runtimeType}');
+              continue;
+            }
+            
+            try {
+              final movie = Movie.fromJson(movieData);
+              movies.add(movie);
+            } catch (e) {
+              print('[TMDB] Error converting movie: $e');
+              print('[TMDB] Movie data: $movieData');
+            }
           }
-        }).toList();
-        
-        print('[TMDB] Conversion complete:');
-        print('[TMDB] - Movies type: ${movies.runtimeType}');
-        print('[TMDB] - Movies count: ${movies.length}');
-        if (movies.isNotEmpty) {
-          print('[TMDB] - First movie: ${movies[0].title}');
+          
+          print('[TMDB] Successfully converted ${movies.length} movies');
+          return movies;
+        } catch (e) {
+          print('[TMDB] Error parsing trending movies: $e');
+          throw FormatException('Failed to parse trending movies: $e');
         }
-        print('[TMDB] ===== End Trending Movies =====\n');
-        
-        return movies;
       },
     );
   }
