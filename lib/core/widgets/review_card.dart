@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/foundation.dart';
 
 class ReviewCard extends StatelessWidget {
   final String authorName;
@@ -31,46 +32,97 @@ class ReviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('[ReviewCard] Building card for author: $authorName');
+    debugPrint('[ReviewCard] Avatar URL: $avatarUrl');
+
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFE9A6A6).withOpacity(0.05),
+        color: const Color(0xFFE9A6A6).withAlpha(13),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Profile Photo
-          CircleAvatar(
-            radius: isDetailPage ? 16 : 18,
-            backgroundColor: Colors.grey[800],
-            child: avatarUrl != null
-                ? ClipOval(
-                    child: CachedNetworkImage(
-                      imageUrl: avatarUrl!,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => const Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
+          ClipOval(
+            child: avatarUrl != null && avatarUrl!.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: avatarUrl!,
+                    width: isDetailPage ? 32 : 36,
+                    height: isDetailPage ? 32 : 36,
+                    fit: BoxFit.cover,
+                    memCacheWidth: isDetailPage ? 64 : 72,
+                    memCacheHeight: isDetailPage ? 64 : 72,
+                    maxWidthDiskCache: isDetailPage ? 64 : 72,
+                    maxHeightDiskCache: isDetailPage ? 64 : 72,
+                    placeholder: (context, url) {
+                      debugPrint('[ReviewCard] Loading avatar for $authorName from: $url');
+                      return Container(
+                        width: isDetailPage ? 32 : 36,
+                        height: isDetailPage ? 32 : 36,
+                        color: Colors.grey[800],
+                        child: Center(
+                          child: Text(
+                            authorName.isNotEmpty ? authorName[0].toUpperCase() : '?',
+                            style: GoogleFonts.openSans(
+                              color: Colors.white,
+                              fontSize: isDetailPage ? 14 : 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
-                      ),
-                      errorWidget: (context, url, error) => Text(
-                        authorName[0].toUpperCase(),
+                      );
+                    },
+                    errorWidget: (context, url, error) {
+                      debugPrint('[ReviewCard] Error loading avatar for $authorName: $error, URL: $url');
+                      if (error is Error) {
+                        debugPrint('[ReviewCard] Error stack trace: ${error.stackTrace}');
+                      }
+                      return Container(
+                        width: isDetailPage ? 32 : 36,
+                        height: isDetailPage ? 32 : 36,
+                        color: Colors.grey[800],
+                        child: Center(
+                          child: Text(
+                            authorName.isNotEmpty ? authorName[0].toUpperCase() : '?',
+                            style: GoogleFonts.openSans(
+                              color: Colors.white,
+                              fontSize: isDetailPage ? 14 : 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    imageBuilder: (context, imageProvider) {
+                      debugPrint('[ReviewCard] Successfully loaded avatar for $authorName');
+                      return Container(
+                        width: isDetailPage ? 32 : 36,
+                        height: isDetailPage ? 32 : 36,
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      );
+                    },
+                  )
+                : Container(
+                    width: isDetailPage ? 32 : 36,
+                    height: isDetailPage ? 32 : 36,
+                    color: Colors.grey[800],
+                    child: Center(
+                      child: Text(
+                        authorName.isNotEmpty ? authorName[0].toUpperCase() : '?',
                         style: GoogleFonts.openSans(
                           color: Colors.white,
-                          fontSize: isDetailPage ? 16 : 18,
+                          fontSize: isDetailPage ? 14 : 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
-                  )
-                : Text(
-                    authorName[0].toUpperCase(),
-                    style: GoogleFonts.openSans(
-                      color: Colors.white,
-                      fontSize: isDetailPage ? 16 : 18,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
           ),

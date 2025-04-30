@@ -37,19 +37,20 @@ class Movie {
 
   factory Movie.fromJson(Map<String, dynamic> json) {
     return Movie(
-      id: json['id'] ?? 0,
-      title: json['title'] ?? '',
-      overview: json['overview'] ?? '',
-      posterPath: json['poster_path'],
-      backdropPath: json['backdrop_path'],
+      id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
+      title: json['title']?.toString() ?? 'Untitled Movie',
+      overview: json['overview']?.toString() ?? '',
+      posterPath: json['poster_path']?.toString(),
+      backdropPath: json['backdrop_path']?.toString(),
       voteAverage: json['vote_average'] != null ? (json['vote_average'] as num).toDouble() : null,
-      voteCount: json['vote_count'],
-      releaseDate: json['release_date'] ?? '',
+      voteCount: json['vote_count'] is int ? json['vote_count'] : int.tryParse(json['vote_count']?.toString() ?? '0'),
+      releaseDate: json['release_date']?.toString() ?? '',
       genres: (json['genres'] as List?)
-          ?.map((genre) => genre['name'] as String)
+          ?.map((genre) => genre['name']?.toString() ?? '')
+          .where((name) => name.isNotEmpty)
           .toList() ??
         [],
-      runtime: json['runtime'],
+      runtime: json['runtime'] is int ? json['runtime'] : int.tryParse(json['runtime']?.toString() ?? '0'),
       userRating: json['rating'] != null ? (json['rating'] as num).toDouble() : null,
     );
   }

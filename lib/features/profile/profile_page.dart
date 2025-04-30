@@ -5,6 +5,7 @@ import 'package:letterboxd/core/models/movie.dart';
 import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
 import 'package:letterboxd/features/profile/controllers/profile_controller.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:letterboxd/features/review/models/review.dart';
 import 'package:letterboxd/routes/app_routes.dart';
 import 'package:letterboxd/core/widgets/custom_bottom_nav.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -369,6 +370,25 @@ class ProfilePage extends StatelessWidget {
                           movieTitle: profileController.recentlyWatched[0].title,
                           movieYear: profileController.recentlyWatched[0].releaseDate.split('-')[0],
                           moviePosterUrl: profileController.recentlyWatched[0].posterUrl,
+                          onTap: () {
+                            final movie = profileController.recentlyWatched[0];
+                            final reviewObj = Review(
+                              id: 'review_${movie.id}',
+                              userId: profileController.authController.currentUser?.id ?? 'unknown',
+                              username: profileController.authController.currentUser?.name ?? 'User',
+                              userAvatarUrl: profileController.authController.currentUser?.profileImage ?? '',
+                              movieId: movie.id.toString(),
+                              movieTitle: movie.title,
+                              movieYear: movie.releaseDate.split('-')[0],
+                              moviePosterUrl: movie.posterUrl,
+                              rating: (movie.userRating ?? 0) / 2,
+                              content: movie.overview,
+                              watchedDate: DateTime.now(), // TODO: Get actual watch date
+                              likes: 0,
+                              isLiked: false,
+                            );
+                            Get.toNamed(AppRoutes.review, arguments: reviewObj);
+                          },
                         ),
                       ],
                     ),

@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:letterboxd/core/theme/app_theme.dart';
 import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
 import 'package:letterboxd/routes/app_routes.dart';
+import 'package:letterboxd/routes/app_pages.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:letterboxd/features/onboarding/onboarding_page.dart';
 
@@ -48,7 +49,7 @@ class MyApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.dark,
       initialRoute: _getInitialRoute(),
-      getPages: AppRoutes.pages,
+      getPages: AppPages.routes,
       debugShowCheckedModeBanner: false,
     );
   }

@@ -227,7 +227,53 @@ class TMDBService {
   static Future<List<Map<String, dynamic>>> getMovieReviews(int movieId) async {
     return _makeRequest<List<Map<String, dynamic>>>(
       endpoint: '/movie/$movieId/reviews?api_key=$_apiKey&language=en-US&page=1',
-      parser: (data) => List<Map<String, dynamic>>.from(data['results']),
+      parser: (data) {
+        try {
+          final results = data['results'] as List? ?? [];
+          print('[TMDB] Processing ${results.length} reviews');
+          
+          return results.map((review) {
+            final authorDetails = review['author_details'] as Map<String, dynamic>? ?? {};
+            final avatarPath = authorDetails['avatar_path']?.toString();
+            String? avatarUrl;
+            
+            print('[TMDB] Processing review for author: ${review['author']}');
+            print('[TMDB] Author details: $authorDetails');
+            print('[TMDB] Original avatar_path: $avatarPath');
+            
+            if (avatarPath != null && avatarPath.isNotEmpty) {
+              if (avatarPath.startsWith('/http') || avatarPath.startsWith('http')) {
+                avatarUrl = avatarPath.startsWith('/') ? avatarPath.substring(1) : avatarPath;
+                print('[TMDB] Using full URL avatar: $avatarUrl');
+              } else {
+                avatarUrl = 'https://image.tmdb.org/t/p/w185$avatarPath';
+                print('[TMDB] Using TMDB path avatar: $avatarUrl');
+              }
+            } else {
+              avatarUrl = 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(review['author'] ?? 'Anonymous')}&background=random';
+              print('[TMDB] Using generated avatar: $avatarUrl');
+            }
+            
+            print('[TMDB] Final avatar URL for ${review['author']}: $avatarUrl');
+            
+            return {
+              'id': review['id']?.toString() ?? '',
+              'author': review['author']?.toString() ?? 'Anonymous',
+              'content': review['content']?.toString() ?? 'No review content available',
+              'created_at': review['created_at']?.toString() ?? DateTime.now().toIso8601String(),
+              'author_details': {
+                'name': authorDetails['name']?.toString() ?? review['author']?.toString() ?? 'Anonymous',
+                'username': authorDetails['username']?.toString() ?? 'anonymous',
+                'avatar_path': avatarUrl,
+                'rating': authorDetails['rating'] != null ? (authorDetails['rating'] as num).toDouble() : null,
+              },
+            };
+          }).toList();
+        } catch (e) {
+          print('[TMDB] Error parsing reviews: $e');
+          return [];
+        }
+      },
     );
   }
 

@@ -8,6 +8,8 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:letterboxd/core/widgets/review_card.dart';
+import 'package:letterboxd/features/review/models/review.dart';
+import 'package:letterboxd/routes/app_routes.dart';
 
 // Custom clipper for diagonal line
 class DiagonalClipper extends CustomClipper<Path> {
@@ -598,13 +600,29 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                               return Column(
                                 children: controller.reviews.take(3).map((review) {
                                   final authorDetails = review['author_details'] ?? {};
+                                  final avatarPath = authorDetails['avatar_path']?.toString();
+                                  String? avatarUrl;
+                                  
+                                  print('[MovieDetail] Original avatar_path: $avatarPath');
+                                  
+                                  if (avatarPath != null && avatarPath.isNotEmpty) {
+                                    if (avatarPath.startsWith('/http') || avatarPath.startsWith('http')) {
+                                      avatarUrl = avatarPath.startsWith('/') ? avatarPath.substring(1) : avatarPath;
+                                      print('[MovieDetail] Full URL avatar: $avatarUrl');
+                                    } else {
+                                      avatarUrl = 'https://image.tmdb.org/t/p/w185$avatarPath';
+                                      print('[MovieDetail] TMDB path avatar: $avatarUrl');
+                                    }
+                                  } else {
+                                    avatarUrl = 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(review['author'] ?? 'Anonymous')}&background=random';
+                                    print('[MovieDetail] Generated avatar: $avatarUrl');
+                                  }
+                                  
+                                  print('[MovieDetail] Final avatar URL: $avatarUrl');
+                                  
                                   return ReviewCard(
                                     authorName: review['author'] ?? 'Anonymous',
-                                    avatarUrl: authorDetails['avatar_path'] != null 
-                                      ? authorDetails['avatar_path']!.startsWith('/') 
-                                        ? authorDetails['avatar_path']!.substring(1) 
-                                        : 'https://image.tmdb.org/t/p/w185${authorDetails['avatar_path']}'
-                                      : null,
+                                    avatarUrl: avatarUrl,
                                     rating: (authorDetails['rating'] ?? 0.0) / 2,
                                     content: review['content'] ?? 'No content',
                                     commentCount: 0,
@@ -613,7 +631,22 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                     moviePosterUrl: movie.posterUrl,
                                     isDetailPage: true,
                                     onTap: () {
-                                      // TODO: Navigate to full review
+                                      final reviewObj = Review(
+                                        id: review['id'].toString(),
+                                        userId: authorDetails['id']?.toString() ?? 'unknown',
+                                        username: review['author'] ?? 'Anonymous',
+                                        userAvatarUrl: avatarUrl ?? '',
+                                        movieId: movie.id.toString(),
+                                        movieTitle: movie.title,
+                                        movieYear: movie.releaseDate.split('-')[0],
+                                        moviePosterUrl: movie.posterUrl,
+                                        rating: (authorDetails['rating'] ?? 0.0) / 2,
+                                        content: review['content'] ?? 'No content',
+                                        watchedDate: DateTime.parse(review['created_at'] ?? DateTime.now().toIso8601String()),
+                                        likes: 0,
+                                        isLiked: false,
+                                      );
+                                      Get.toNamed(AppRoutes.review, arguments: reviewObj);
                                     },
                                   );
                                 }).toList(),

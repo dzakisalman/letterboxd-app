@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:letterboxd/core/models/movie.dart';
 import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
 import 'package:letterboxd/features/home/controllers/home_controller.dart';
+import 'package:letterboxd/features/review/models/review.dart';
 import 'package:letterboxd/features/sidebar/drawer_menu.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:letterboxd/routes/app_routes.dart';
@@ -220,7 +221,22 @@ class HomePage extends StatelessWidget {
                           movieYear: '2019',
                           moviePosterUrl: review['posterPath'],
                           onTap: () {
-                            // TODO: Navigate to review detail
+                            final reviewObj = Review(
+                              id: review['movieId']?.toString() ?? 'unknown',
+                              userId: 'user_123', // TODO: Get actual user ID
+                              username: review['author'] ?? 'Anonymous',
+                              userAvatarUrl: review['avatarUrl'] ?? 'https://via.placeholder.com/150',
+                              movieId: review['movieId']?.toString() ?? 'unknown',
+                              movieTitle: review['movieTitle'] ?? 'Untitled Movie',
+                              movieYear: review['createdAt']?.substring(0, 4) ?? '2024',
+                              moviePosterUrl: review['posterPath'] ?? '',
+                              rating: (review['rating'] as num?)?.toDouble() ?? 0.0,
+                              content: review['content'] ?? 'No review content available',
+                              watchedDate: DateTime.tryParse(review['createdAt'] ?? '') ?? DateTime.now(),
+                              likes: 0,
+                              isLiked: false,
+                            );
+                            Get.toNamed(AppRoutes.review, arguments: reviewObj);
                           },
                         );
                       },

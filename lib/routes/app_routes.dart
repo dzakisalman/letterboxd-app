@@ -1,13 +1,4 @@
 import 'package:get/get.dart';
-import 'package:letterboxd/features/authentication/login/login_page.dart';
-import 'package:letterboxd/features/authentication/signup/signup_page.dart';
-import 'package:letterboxd/features/home/home_page.dart';
-import 'package:letterboxd/features/onboarding/onboarding_page.dart';
-import 'package:letterboxd/features/profile/profile_page.dart';
-import 'package:letterboxd/features/movie/movie_detail_page.dart';
-import 'package:letterboxd/features/review/review_form_page.dart';
-import 'package:letterboxd/features/explore/explore_page.dart';
-import 'package:letterboxd/features/activity/activity_page.dart';
 
 class AppRoutes {
   static const String onboarding = '/onboarding';
@@ -23,54 +14,10 @@ class AppRoutes {
   static const String likes = '/likes';
   static const String explore = '/explore';
   static const String activity = '/activity';
+  static const String review = '/review';
 
   static String movieDetailPath(String id) => '/movie/$id';
+  
   static String reviewFormPath(String movieId, String movieTitle, String movieYear, String posterPath) => 
     '/review/$movieId?title=${Uri.encodeComponent(movieTitle)}&year=${Uri.encodeComponent(movieYear)}&poster=${Uri.encodeComponent(posterPath)}';
-
-  static final pages = [
-    GetPage(
-      name: onboarding,
-      page: () => const OnboardingPage(),
-    ),
-    GetPage(
-      name: home,
-      page: () => const HomePage(),
-    ),
-    GetPage(
-      name: login,
-      page: () => LoginPage(),
-    ),
-    GetPage(
-      name: signup,
-      page: () => SignupPage(),
-    ),
-    GetPage(
-      name: profile,
-      page: () => const ProfilePage(),
-    ),
-    GetPage(
-      name: movieDetail,
-      page: () => MovieDetailPage(
-        movieId: Get.parameters['id'] ?? '',
-      ),
-    ),
-    GetPage(
-      name: reviewForm,
-      page: () => ReviewFormPage(
-        movieId: Get.parameters['movieId'] ?? '',
-        movieTitle: Uri.decodeComponent(Get.parameters['title'] ?? ''),
-        movieYear: Uri.decodeComponent(Get.parameters['year'] ?? ''),
-        posterPath: Uri.decodeComponent(Get.parameters['poster'] ?? ''),
-      ),
-    ),
-    GetPage(
-      name: explore,
-      page: () => const ExplorePage(),
-    ),
-    // GetPage(
-    //   name: activity,
-    //   page: () => const ActivityPage(),
-    // ),
-  ];
 } 

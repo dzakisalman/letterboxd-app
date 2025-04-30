@@ -131,44 +131,67 @@ class HomeController extends GetxController {
     try {
       isLoadingMore.value = true;
       
+      print('[Home] Loading reviews for ${popularMovies.length} movies');
+      
       // Get reviews for first 3 popular movies in parallel
       final reviews = await Future.wait(
         popularMovies.take(3).map((movie) => TMDBService.getMovieReviews(movie.id))
       );
       
+      print('[Home] Received ${reviews.length} review sets');
+      
       final List<Map<String, dynamic>> allReviews = [];
       
       for (var i = 0; i < reviews.length; i++) {
+        print('[Home] Processing review set $i');
         if (reviews[i].isNotEmpty) {
           final movie = popularMovies[i];
           final review = reviews[i][0];
-          final avatarPath = review['author_details']?['avatar_path'];
-          String? avatarUrl;
+          final authorDetails = review['author_details'] as Map<String, dynamic>? ?? {};
           
-          if (avatarPath != null) {
-            // Check if it's a full URL (starts with http)
-            if (avatarPath.startsWith('/http')) {
-              avatarUrl = avatarPath.substring(1); // Remove leading slash
+          print('[Home] Movie data: ${movie.toJson()}');
+          print('[Home] Review data: $review');
+          
+          // Process avatar URL
+          final avatarPath = authorDetails['avatar_path']?.toString();
+          String avatarUrl;
+          
+          if (avatarPath != null && avatarPath.isNotEmpty) {
+            // If it's already a full URL (starts with http or https)
+            if (avatarPath.startsWith('/http') || avatarPath.startsWith('http')) {
+              avatarUrl = avatarPath.startsWith('/') ? avatarPath.substring(1) : avatarPath;
             } else {
+              // If it's a TMDB path
               avatarUrl = 'https://image.tmdb.org/t/p/w185$avatarPath';
             }
+          } else {
+            // Fallback to ui-avatars
+            avatarUrl = 'https://ui-avatars.com/api/?name=${(review['author']?.toString() ?? 'Anonymous').replaceAll(' ', '+')}&background=random';
           }
           
-          allReviews.add({
-            'movieTitle': movie.title,
-            'movieId': movie.id,
-            'posterPath': movie.posterUrl,
-            'author': review['author'] ?? 'Anonymous',
+          final reviewData = {
+            'movieTitle': movie.title ?? 'Untitled Movie',
+            'movieId': movie.id ?? '',
+            'posterPath': movie.posterUrl ?? '',
+            'author': authorDetails['name']?.toString() ?? review['author']?.toString() ?? 'Anonymous',
             'avatarUrl': avatarUrl,
-            'rating': (review['author_details']?['rating'] ?? 0) / 2,
-            'content': review['content'] ?? '',
-            'createdAt': review['created_at'] ?? '',
-          });
+            'rating': (authorDetails['rating'] ?? 0) / 2,
+            'content': review['content']?.toString() ?? 'No review content available',
+            'createdAt': review['created_at']?.toString() ?? DateTime.now().toIso8601String(),
+          };
+          
+          print('[Home] Processed review data: $reviewData');
+          allReviews.add(reviewData);
+        } else {
+          print('[Home] No reviews found for movie $i');
         }
       }
       
+      print('[Home] Total reviews processed: ${allReviews.length}');
       recentReviews.value = allReviews;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('[Home] Error in loadReviews: $e');
+      print('[Home] Stack trace: $stackTrace');
       Get.snackbar(
         'Error',
         'Failed to load reviews: ${e.toString()}',
