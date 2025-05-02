@@ -3,6 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:letterboxd/core/models/movie.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:letterboxd/core/services/tmdb_service.dart';
+import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
 
 class ReviewFormPage extends StatefulWidget {
   final String movieId;
@@ -238,12 +240,6 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
                     ),
                     contentPadding: const EdgeInsets.all(16),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please write a review';
-                    }
-                    return null;
-                  },
                 ),
                 const SizedBox(height: 24),
                 Align(
@@ -287,13 +283,54 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
     return months[month - 1];
   }
 
-  void _submitReview() {
-    if (_formKey.currentState!.validate()) {
-      // TODO: Implement review submission
+  void _submitReview() async {
+    try {
+      final authController = Get.find<AuthController>();
+      if (!authController.isLoggedIn) {
+        print('[ReviewForm] Error: User not logged in');
+        Get.snackbar(
+          'Error',
+          'Please login to submit rating and mark as favorite',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      // Submit rating if rating is greater than 0
+      if (_rating > 0) {
+        print('[ReviewForm] Submitting rating: $_rating (converted to ${_rating * 2}) for movie ${widget.movieId}');
+        await TMDBService.rateMovie(int.parse(widget.movieId), _rating * 2); // Convert 5-star to 10-point scale
+        print('[ReviewForm] Rating submitted successfully');
+      }
+
+      // Mark as favorite if selected
+      if (_isFavorite) {
+        print('[ReviewForm] Marking movie ${widget.movieId} as favorite');
+        await TMDBService.markAsFavorite(
+          authController.sessionId!,
+          int.parse(widget.movieId),
+          true,
+        );
+        print('[ReviewForm] Movie marked as favorite successfully');
+      }
+
       Get.back();
       Get.snackbar(
         'Success',
-        'Review submitted successfully',
+        'Rating and favorite status updated successfully',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e, stackTrace) {
+      print('[ReviewForm] Error submitting review:');
+      print('[ReviewForm] Error message: $e');
+      print('[ReviewForm] Stack trace: $stackTrace');
+      print('[ReviewForm] Movie ID: ${widget.movieId}');
+      print('[ReviewForm] Rating: $_rating');
+      print('[ReviewForm] Is Favorite: $_isFavorite');
+      
+      Get.snackbar(
+        'Error',
+        'Failed to submit rating and favorite status: ${e.toString()}',
         snackPosition: SnackPosition.BOTTOM,
       );
     }

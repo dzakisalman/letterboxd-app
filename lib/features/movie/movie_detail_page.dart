@@ -720,44 +720,47 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                 final fullStars = rating.floor();
                 final hasHalfStar = rating - fullStars >= 0.5;
                 
-                return Container(
-                  width: MediaQuery.of(context).size.width * 0.35,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE9A6A6),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ...List.generate(fullStars, (index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 1),
-                          child: SvgPicture.asset(
-                            'assets/icons/star.svg',
-                            colorFilter: const ColorFilter.mode(
-                              Color(0xFF1F1D36),
-                              BlendMode.srcIn,
+                return GestureDetector(
+                  onTap: controller.navigateToReviewForm,
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.35,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE9A6A6),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ...List.generate(fullStars, (index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 1),
+                            child: SvgPicture.asset(
+                              'assets/icons/star.svg',
+                              colorFilter: const ColorFilter.mode(
+                                Color(0xFF1F1D36),
+                                BlendMode.srcIn,
+                              ),
+                              width: 14,
+                              height: 14,
                             ),
-                            width: 14,
-                            height: 14,
-                          ),
-                        );
-                      }),
-                      if (hasHalfStar)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 1),
-                          child: SvgPicture.asset(
-                            'assets/icons/halfstar.svg',
-                            colorFilter: const ColorFilter.mode(
-                              Color(0xFF1F1D36),
-                              BlendMode.srcIn,
+                          );
+                        }),
+                        if (hasHalfStar)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 1),
+                            child: SvgPicture.asset(
+                              'assets/icons/halfstar.svg',
+                              colorFilter: const ColorFilter.mode(
+                                Color(0xFF1F1D36),
+                                BlendMode.srcIn,
+                              ),
+                              width: 14,
+                              height: 14,
                             ),
-                            width: 14,
-                            height: 14,
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               } else {

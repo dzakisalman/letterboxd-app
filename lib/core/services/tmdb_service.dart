@@ -340,16 +340,31 @@ class TMDBService {
   }
 
   static Future<bool> rateMovie(int movieId, double rating) async {
+    final authController = Get.find<AuthController>();
+    final sessionId = authController.sessionId;
+    
+    if (sessionId == null) {
+      throw Exception('User not logged in');
+    }
+
     final response = await http.post(
-      Uri.parse('$_baseUrl/movie/$movieId/rating'),
+      Uri.parse('$_baseUrl/movie/$movieId/rating?api_key=$_apiKey&session_id=$sessionId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${ApiService.accessToken}',
+      },
       body: json.encode({
         'value': rating,
       }),
     );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      print('[TMDB] Successfully rated movie. Status code: ${response.statusCode}');
+      print('[TMDB] Response body: ${response.body}');
       return true;
     } else {
+      print('[TMDB] Failed to rate movie. Status code: ${response.statusCode}');
+      print('[TMDB] Response body: ${response.body}');
       throw Exception('Failed to rate movie');
     }
   }
@@ -499,23 +514,38 @@ class TMDBService {
   }
 
   static Future<bool> markAsFavorite(String sessionId, int movieId, bool favorite) async {
-    final accountDetails = await getAccountDetails(sessionId);
-    final accountId = accountDetails['id'];
+    try {
+      final accountDetails = await getAccountDetails(sessionId);
+      final accountId = accountDetails['id'];
 
-    final response = await http.post(
-      Uri.parse('$_baseUrl/account/$accountId/favorite?api_key=$_apiKey&session_id=$sessionId'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'media_type': 'movie',
-        'media_id': movieId,
-        'favorite': favorite,
-      }),
-    );
+      print('[TMDB] Marking movie $movieId as favorite: $favorite');
+      print('[TMDB] Account ID: $accountId');
+      print('[TMDB] Session ID: $sessionId');
 
-    if (response.statusCode == 200) {
-      return true;
-    } else {
-      throw Exception('Failed to mark movie as favorite');
+      final response = await http.post(
+        Uri.parse('$_baseUrl/account/$accountId/favorite?api_key=$_apiKey&session_id=$sessionId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${ApiService.accessToken}',
+        },
+        body: json.encode({
+          'media_type': 'movie',
+          'media_id': movieId,
+          'favorite': favorite,
+        }),
+      );
+
+      print('[TMDB] Favorite response status: ${response.statusCode}');
+      print('[TMDB] Favorite response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        throw Exception('Failed to mark movie as favorite. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('[TMDB] Error marking as favorite: $e');
+      rethrow;
     }
   }
 
