@@ -31,7 +31,7 @@ class ReviewFormPage extends StatefulWidget {
 class _ReviewFormPageState extends State<ReviewFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _reviewController = TextEditingController();
-  int _rating = 0;
+  double _rating = 0; // Changed from int to double to support half stars
   bool _isFavorite = false;
   DateTime _watchedDate = DateTime.now();
 
@@ -40,7 +40,7 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
     super.initState();
     // Initialize with existing data if available
     if (widget.existingRating != null) {
-      _rating = widget.existingRating!.round();
+      _rating = widget.existingRating!;
     }
     if (widget.isFavorite != null) {
       _isFavorite = widget.isFavorite!;
@@ -177,23 +177,60 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
                                 children: [
                                   Row(
                                     children: List.generate(5, (index) {
+                                      final starValue = index + 1;
+                                      final isHalfStar = _rating == starValue - 0.5;
+                                      final isFullStar = _rating >= starValue;
+                                      
                                       return GestureDetector(
                                         onTap: () {
                                           setState(() {
-                                            _rating = index + 1;
+                                            if (isFullStar) {
+                                              // If clicking a full star, change to half star
+                                              _rating = starValue - 0.5;
+                                            } else if (isHalfStar) {
+                                              // If clicking a half star, change to empty star
+                                              _rating = starValue - 1;
+                                            } else {
+                                              // If clicking an empty star, change to full star
+                                              _rating = starValue.toDouble();
+                                            }
                                           });
                                         },
                                         child: Padding(
                                           padding: const EdgeInsets.only(right: 4),
-                                          child: SvgPicture.asset(
-                                            'assets/icons/star.svg',
-                                            width: 24,
-                                            height: 24,
-                                            colorFilter: ColorFilter.mode(
-                                              index < _rating ? Colors.red : const Color(0xFF3D3B54),
-                                              BlendMode.srcIn,
-                                            ),
-                                          ),
+                                          child: isHalfStar
+                                              ? Stack(
+                                                  alignment: Alignment.centerLeft,
+                                                  children: [
+                                                    SvgPicture.asset(
+                                                      'assets/icons/star.svg',
+                                                      width: 24,
+                                                      height: 24,
+                                                      colorFilter: const ColorFilter.mode(
+                                                        Color(0xFF3D3B54),
+                                                        BlendMode.srcIn,
+                                                      ),
+                                                    ),
+                                                    SvgPicture.asset(
+                                                      'assets/icons/halfstar.svg',
+                                                      width: 24,
+                                                      height: 24,
+                                                      colorFilter: const ColorFilter.mode(
+                                                        Colors.red,
+                                                        BlendMode.srcIn,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                )
+                                              : SvgPicture.asset(
+                                                  'assets/icons/star.svg',
+                                                  width: 24,
+                                                  height: 24,
+                                                  colorFilter: ColorFilter.mode(
+                                                    isFullStar ? Colors.red : const Color(0xFF3D3B54),
+                                                    BlendMode.srcIn,
+                                                  ),
+                                                ),
                                         ),
                                       );
                                     }),
@@ -314,8 +351,9 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
 
       // Submit rating if rating is greater than 0
       if (_rating > 0) {
-        print('[ReviewForm] Submitting rating: $_rating (converted to ${_rating * 2}) for movie ${widget.movieId}');
-        await TMDBService.rateMovie(int.parse(widget.movieId), _rating * 2); // Convert 5-star to 10-point scale
+        final ratingValue = _rating * 2.0; // Convert 5-star scale to 10-point scale
+        print('[ReviewForm] Submitting rating: $_rating (converted to $ratingValue) for movie ${widget.movieId}');
+        await TMDBService.rateMovie(int.parse(widget.movieId), ratingValue);
         print('[ReviewForm] Rating submitted successfully');
       }
 
