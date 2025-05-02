@@ -115,12 +115,27 @@ class MovieDetailController extends GetxController {
     try {
       if (movie.value == null) return;
 
-      const accountId = 1; // TODO: Get from auth
+      final authController = Get.find<AuthController>();
+      if (!authController.isLoggedIn) {
+        Get.snackbar(
+          'Error',
+          'Please login to manage watchlist',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      final accountDetails = await TMDBService.getAccountDetails(authController.sessionId!);
+      final accountId = accountDetails['id'];
       final movieId = movie.value!.id;
 
       if (isInWatchlist.value) {
-        final success = await TMDBService.removeFromWatchlist(accountId, movieId);
-        if (success) {
+        final response = await TMDBService.markAsWatchlist(
+          authController.sessionId!,
+          movieId,
+          false,
+        );
+        if (response) {
           isInWatchlist.value = false;
           // Refresh movie status after removing from watchlist
           await checkMovieStatus(movieId);
@@ -131,8 +146,12 @@ class MovieDetailController extends GetxController {
           );
         }
       } else {
-        final success = await TMDBService.addToWatchlist(accountId, movieId);
-        if (success) {
+        final response = await TMDBService.markAsWatchlist(
+          authController.sessionId!,
+          movieId,
+          true,
+        );
+        if (response) {
           isInWatchlist.value = true;
           // Refresh movie status after adding to watchlist
           await checkMovieStatus(movieId);
@@ -144,6 +163,7 @@ class MovieDetailController extends GetxController {
         }
       }
     } catch (e) {
+      print('[MovieDetail] Error toggling watchlist: $e');
       Get.snackbar(
         'Error',
         'Failed to update watchlist: ${e.toString()}',

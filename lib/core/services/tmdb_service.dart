@@ -610,6 +610,42 @@ class TMDBService {
     }
   }
 
+  static Future<bool> markAsWatchlist(String sessionId, int movieId, bool watchlist) async {
+    try {
+      final accountDetails = await getAccountDetails(sessionId);
+      final accountId = accountDetails['id'];
+
+      print('[TMDB] Marking movie $movieId as watchlist: $watchlist');
+      print('[TMDB] Account ID: $accountId');
+      print('[TMDB] Session ID: $sessionId');
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/account/$accountId/watchlist?api_key=$_apiKey&session_id=$sessionId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${ApiService.accessToken}',
+        },
+        body: json.encode({
+          'media_type': 'movie',
+          'media_id': movieId,
+          'watchlist': watchlist,
+        }),
+      );
+
+      print('[TMDB] Watchlist response status: ${response.statusCode}');
+      print('[TMDB] Watchlist response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        throw Exception('Failed to update watchlist. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('[TMDB] Error marking as watchlist: $e');
+      rethrow;
+    }
+  }
+
   // Clear cache
   static void clearCache() {
     _cache.clear();

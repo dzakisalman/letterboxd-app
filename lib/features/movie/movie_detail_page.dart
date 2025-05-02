@@ -778,11 +778,11 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
               svgPath: 'assets/icons/lists.svg',
             ),
             const SizedBox(height: 8),
-            _buildActionButton(
-              'Add to Watchlist',
+            Obx(() => _buildActionButton(
+              controller.isInWatchlist.value ? 'Remove from Watchlist' : 'Add to Watchlist',
               onPressed: controller.toggleWatchlist,
               svgPath: 'assets/icons/watchlists.svg',
-            ),
+            )),
           ],
         ),
         const SizedBox(width: 16),
@@ -827,12 +827,16 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                     height: 14,
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    text,
-                    style: TextStyle(
-                      color: backgroundColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                  Flexible(
+                    child: Text(
+                      text,
+                      style: TextStyle(
+                        color: backgroundColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                 ],
