@@ -20,8 +20,8 @@ void main() async {
   final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
   final isLoggedIn = prefs.getString('user') != null && prefs.getString('session_id') != null;
 
-  // If user is not logged in, force show onboarding
-  final shouldShowOnboarding = !isLoggedIn || !hasSeenOnboarding;
+  // Only show onboarding if user has never seen it
+  final shouldShowOnboarding = !hasSeenOnboarding;
 
   runApp(MyApp(
     hasSeenOnboarding: !shouldShowOnboarding,

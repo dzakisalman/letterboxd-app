@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:letterboxd/routes/app_routes.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingPage extends StatelessWidget {
   const OnboardingPage({super.key});
@@ -78,7 +79,10 @@ class OnboardingPage extends StatelessWidget {
                   SizedBox(
                     width: 200,
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
+                        // Set has_seen_onboarding flag to true
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool('has_seen_onboarding', true);
                         Get.offAllNamed(AppRoutes.login);
                       },
                       style: ElevatedButton.styleFrom(

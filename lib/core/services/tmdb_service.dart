@@ -8,7 +8,7 @@ import 'package:letterboxd/features/authentication/controllers/auth_controller.d
 class TMDBService {
   static const String _baseUrl = 'https://api.themoviedb.org/3';
   static final String _apiKey = ApiService.apiKey;
-  static const Duration _timeout = Duration(seconds: 10);
+  static const Duration _timeout = Duration(seconds: 30);
   static const Duration _cacheDuration = Duration(minutes: 5);
   
   // Cache for API responses
@@ -63,6 +63,11 @@ class TMDBService {
       
       final response = await http.get(
         Uri.parse('$_baseUrl$endpoint'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${ApiService.accessToken}',
+        },
       ).timeout(_timeout);
 
       final endTime = DateTime.now();
@@ -70,6 +75,7 @@ class TMDBService {
       
       print('[TMDB API] Response received in ${duration.inMilliseconds}ms');
       print('[TMDB API] Status code: ${response.statusCode}');
+      print('[TMDB API] Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -504,13 +510,41 @@ class TMDBService {
   }
 
   static Future<List<Movie>> getRatedMovies(String sessionId) async {
-    return _makeRequest<List<Movie>>(
-      endpoint: '/account/account_id/rated/movies?api_key=$_apiKey&session_id=$sessionId&language=en-US&sort_by=created_at.desc&page=1',
-      parser: (data) => (data['results'] as List)
-          .map((movie) => Movie.fromJson(movie))
-          .toList(),
-      useCache: false,
-    );
+    try {
+      print('[TMDB] Getting rated movies...');
+      
+      // Get account details first to get the account ID
+      final accountDetails = await getAccountDetails(sessionId);
+      final accountId = accountDetails['id'];
+
+      print('[TMDB] Got account ID: $accountId');
+      
+      final response = await http.get(
+        Uri.parse('$_baseUrl/account/$accountId/rated/movies?api_key=$_apiKey&session_id=$sessionId&language=en-US&sort_by=created_at.desc&page=1'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${ApiService.accessToken}',
+        },
+      ).timeout(_timeout);
+
+      print('[TMDB] Rated movies response status: ${response.statusCode}');
+      print('[TMDB] Rated movies response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final results = data['results'] as List;
+        final movies = results.map((movie) => Movie.fromJson(movie)).toList();
+        print('[TMDB] Successfully parsed ${movies.length} rated movies');
+        return movies;
+      } else {
+        print('[TMDB] Failed to get rated movies. Status: ${response.statusCode}');
+        throw Exception('Failed to get rated movies. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('[TMDB] Error getting rated movies: $e');
+      rethrow;
+    }
   }
 
   static Future<bool> markAsFavorite(String sessionId, int movieId, bool favorite) async {

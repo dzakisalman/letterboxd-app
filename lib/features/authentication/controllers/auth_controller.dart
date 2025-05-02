@@ -46,7 +46,6 @@ class AuthController extends GetxController {
   Future<void> _clearStoredData() async {
     await _prefs.remove('user');
     await _prefs.remove('session_id');
-    await _prefs.remove('has_seen_onboarding'); // Clear onboarding status
     _currentUser.value = null;
     _sessionId = null;
   }

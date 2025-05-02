@@ -15,10 +15,23 @@ class FilmsPage extends StatefulWidget {
 
 class _FilmsPageState extends State<FilmsPage> {
   bool _isGridView = false;
+  late MovieController _movieController;
+
+  @override
+  void initState() {
+    super.initState();
+    print('[FilmsPage] Initializing...');
+    _movieController = Get.find<MovieController>();
+    // Explicitly refresh rated movies when page is opened
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print('[FilmsPage] Post frame callback - refreshing movies...');
+      _movieController.refreshRatedMovies();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final movieController = Get.find<MovieController>();
+    print('[FilmsPage] Building UI...');
 
     return Scaffold(
       backgroundColor: const Color(0xFF1F1D36),
@@ -51,15 +64,20 @@ class _FilmsPageState extends State<FilmsPage> {
         ],
       ),
       body: Obx(() {
-        if (movieController.isLoading) {
+        print('[FilmsPage] Rebuilding with Obx...');
+        print('[FilmsPage] Loading state: ${_movieController.isLoading}');
+        print('[FilmsPage] Rated movies count: ${_movieController.ratedMovies.length}');
+
+        if (_movieController.isLoading) {
           return const Center(
             child: CircularProgressIndicator(),
           );
         }
 
-        final ratedMovies = movieController.ratedMovies;
+        final ratedMovies = _movieController.ratedMovies;
         
         if (ratedMovies.isEmpty) {
+          print('[FilmsPage] No rated movies found');
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -89,6 +107,8 @@ class _FilmsPageState extends State<FilmsPage> {
             ),
           );
         }
+
+        print('[FilmsPage] Displaying ${ratedMovies.length} rated movies');
 
         if (_isGridView) {
           return GridView.builder(
