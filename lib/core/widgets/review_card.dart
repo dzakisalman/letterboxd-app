@@ -179,21 +179,40 @@ class ReviewCard extends StatelessWidget {
                 // Rating stars and comments
                 Row(
                   children: [
-                    ...List.generate(5, (index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 2),
-                        child: SvgPicture.asset(
-                          'assets/icons/star.svg',
-                          colorFilter: ColorFilter.mode(
-                            index < rating ? const Color(0xFFEC2626) : Colors.grey[600]!,
-                            BlendMode.srcIn,
+                    ...List.generate(rating.ceil(), (index) {
+                      final fullStars = rating.floor();
+                      final hasHalfStar = rating - fullStars >= 0.5;
+                      
+                      if (index < fullStars) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 2),
+                          child: SvgPicture.asset(
+                            'assets/icons/star.svg',
+                            colorFilter: ColorFilter.mode(
+                              const Color(0xFFEC2626),
+                              BlendMode.srcIn,
+                            ),
+                            width: isDetailPage ? 14 : 12,
+                            height: isDetailPage ? 14 : 12,
                           ),
-                          width: isDetailPage ? 14 : 12,
-                          height: isDetailPage ? 14 : 12,
-                        ),
-                      );
+                        );
+                      } else if (index == fullStars && hasHalfStar) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 2),
+                          child: SvgPicture.asset(
+                            'assets/icons/halfstar.svg',
+                            colorFilter: ColorFilter.mode(
+                              const Color(0xFFEC2626),
+                              BlendMode.srcIn,
+                            ),
+                            width: isDetailPage ? 14 : 12,
+                            height: isDetailPage ? 14 : 12,
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
                     }),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 4),
                     Icon(
                       Icons.chat_bubble_outline,
                       color: Colors.grey[400],

@@ -54,14 +54,14 @@ class ProfilePage extends StatelessWidget {
                       top: 110,
                       child: Center(
                         child: CircleAvatar(
-                    radius: 40,
+                          radius: 40,
                           backgroundImage: profileController.authController.currentUser?.profileImage != null
                             ? NetworkImage(profileController.authController.currentUser!.profileImage!)
-                            : null,
-                    backgroundColor: Colors.grey[800],
+                              : null,
+                          backgroundColor: Colors.grey[800],
                           child: profileController.authController.currentUser?.profileImage == null
                             ? const Icon(Icons.person, size: 40, color: Colors.white70)
-                            : null,
+                              : null,
                         ),
                       ),
                     ),
@@ -151,10 +151,10 @@ class ProfilePage extends StatelessWidget {
                           '${profileController.authController.currentUser?.reviews ?? 0}',
                           'Review',
                           Color(0xFF9C4A8B)!,
-                    ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
                 ),
                 // Favorite Films Section
                 Padding(
@@ -178,12 +178,15 @@ class ProfilePage extends StatelessWidget {
                             scrollDirection: Axis.horizontal,
                             shrinkWrap: true,
                             itemCount: profileController.favoriteMovies.length,
-                            separatorBuilder: (context, index) => const SizedBox(width: 12),
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(width: 12),
                             itemBuilder: (context, index) {
-                              final movie = profileController.favoriteMovies[index];
+                              final movie =
+                                  profileController.favoriteMovies[index];
                               return GestureDetector(
-                onTap: () {
-                                  Get.toNamed(AppRoutes.movieDetailPath(movie.id.toString()));
+                                onTap: () {
+                                  Get.toNamed(AppRoutes.movieDetailPath(
+                                      movie.id.toString()));
                                 },
                                 child: Container(
                                   width: 80,
@@ -204,7 +207,8 @@ class ProfilePage extends StatelessWidget {
                                           ),
                                         ),
                                       ),
-                                      errorWidget: (context, url, error) => Container(
+                                      errorWidget: (context, url, error) =>
+                                          Container(
                                         color: Colors.grey[800],
                                         child: const Icon(Icons.error),
                                       ),
@@ -254,10 +258,12 @@ class ProfilePage extends StatelessWidget {
                           scrollDirection: Axis.horizontal,
                           itemCount: profileController.recentlyWatched.length,
                           itemBuilder: (context, index) {
-                            final movie = profileController.recentlyWatched[index];
+                            final movie =
+                                profileController.recentlyWatched[index];
                             return GestureDetector(
-                onTap: () {
-                                Get.toNamed(AppRoutes.movieDetailPath(movie.id.toString()));
+                              onTap: () {
+                                Get.toNamed(AppRoutes.movieDetailPath(
+                                    movie.id.toString()));
                               },
                               child: Container(
                                 width: 100,
@@ -270,7 +276,8 @@ class ProfilePage extends StatelessWidget {
                                         child: CachedNetworkImage(
                                           imageUrl: movie.posterUrl,
                                           fit: BoxFit.cover,
-                                          placeholder: (context, url) => Container(
+                                          placeholder: (context, url) =>
+                                              Container(
                                             color: Colors.grey[800],
                                             child: const Center(
                                               child: CircularProgressIndicator(
@@ -278,7 +285,8 @@ class ProfilePage extends StatelessWidget {
                                               ),
                                             ),
                                           ),
-                                          errorWidget: (context, url, error) => Container(
+                                          errorWidget: (context, url, error) =>
+                                              Container(
                                             color: Colors.grey[800],
                                             child: const Icon(Icons.error),
                                           ),
@@ -287,14 +295,62 @@ class ProfilePage extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 4),
                                     Row(
-                                      children: List.generate(
-                                        5,
-                                        (i) => Icon(
-                                          i < ((movie.userRating ?? 0) / 2).floor() ? Icons.star : Icons.star_border,
-                                          size: 12,
-                                          color: Color(0xFFE53935),
-                                        ),
-                                      ),
+                                      children: [
+                                        ...List.generate(5, (index) {
+                                          final rating =
+                                              (movie.userRating ?? 0) / 2;
+                                          final fullStars = rating.floor();
+                                          final hasHalfStar =
+                                              rating - fullStars >= 0.5;
+
+                                          if (index < fullStars) {
+                                            return Padding(
+                                              padding: const EdgeInsets.only(
+                                                  right: 1),
+                                              child: SvgPicture.asset(
+                                                'assets/icons/star.svg',
+                                                colorFilter:
+                                                    const ColorFilter.mode(
+                                                  Color(0xFFE53935),
+                                                  BlendMode.srcIn,
+                                                ),
+                                                width: 12,
+                                                height: 12,
+                                              ),
+                                            );
+                                          } else if (index == fullStars &&
+                                              hasHalfStar) {
+                                            return Padding(
+                                              padding: const EdgeInsets.only(
+                                                  right: 1),
+                                              child: SvgPicture.asset(
+                                                'assets/icons/halfstar.svg',
+                                                colorFilter:
+                                                    const ColorFilter.mode(
+                                                  Color(0xFFE53935),
+                                                  BlendMode.srcIn,
+                                                ),
+                                                width: 12,
+                                                height: 12,
+                                              ),
+                                            );
+                                          } else {
+                                            return Padding(
+                                              padding: const EdgeInsets.only(
+                                                  right: 1),
+                                              child: SvgPicture.asset(
+                                                'assets/icons/star.svg',
+                                                colorFilter: ColorFilter.mode(
+                                                  Color(0xFFE53935).withOpacity(0),
+                                                  BlendMode.srcIn,
+                                                ),
+                                                width: 12,
+                                                height: 12,
+                                              ),
+                                            );
+                                          }
+                                        }),
+                                      ],
                                     ),
                                     Row(
                                       children: [
@@ -308,13 +364,17 @@ class ProfilePage extends StatelessWidget {
                                         const SizedBox(width: 2),
                                         // Arrow icon
                                         Padding(
-                                          padding: const EdgeInsets.only(top: 2),
+                                          padding:
+                                              const EdgeInsets.only(top: 2),
                                           child: SizedBox(
                                             width: 9,
                                             height: 9,
                                             child: SvgPicture.asset(
                                               'assets/icons/arrow.svg',
-                                              colorFilter: const ColorFilter.mode(Color(0xFF9C4A8B), BlendMode.srcIn),
+                                              colorFilter:
+                                                  const ColorFilter.mode(
+                                                      Color(0xFF9C4A8B),
+                                                      BlendMode.srcIn),
                                             ),
                                           ),
                                         ),
@@ -362,28 +422,46 @@ class ProfilePage extends StatelessWidget {
                         const SizedBox(height: 12),
                         // Review Card
                         ReviewCard(
-                          authorName: profileController.authController.currentUser?.name ?? 'User',
-                          avatarUrl: profileController.authController.currentUser?.profileImage,
-                          rating: (profileController.recentlyWatched[0].userRating ?? 0) / 2,
-                          content: profileController.recentlyWatched[0].overview,
+                          authorName: profileController
+                                  .authController.currentUser?.name ??
+                              'User',
+                          avatarUrl: profileController
+                              .authController.currentUser?.profileImage,
+                          rating: (profileController
+                                      .recentlyWatched[0].userRating ??
+                                  0) /
+                              2,
+                          content:
+                              profileController.recentlyWatched[0].overview,
                           commentCount: 0,
-                          movieTitle: profileController.recentlyWatched[0].title,
-                          movieYear: profileController.recentlyWatched[0].releaseDate.split('-')[0],
-                          moviePosterUrl: profileController.recentlyWatched[0].posterUrl,
+                          movieTitle:
+                              profileController.recentlyWatched[0].title,
+                          movieYear: profileController
+                              .recentlyWatched[0].releaseDate
+                              .split('-')[0],
+                          moviePosterUrl:
+                              profileController.recentlyWatched[0].posterUrl,
                           onTap: () {
                             final movie = profileController.recentlyWatched[0];
                             final reviewObj = Review(
                               id: 'review_${movie.id}',
-                              userId: profileController.authController.currentUser?.id ?? 'unknown',
-                              username: profileController.authController.currentUser?.name ?? 'User',
-                              userAvatarUrl: profileController.authController.currentUser?.profileImage ?? '',
+                              userId: profileController
+                                      .authController.currentUser?.id ??
+                                  'unknown',
+                              username: profileController
+                                      .authController.currentUser?.name ??
+                                  'User',
+                              userAvatarUrl: profileController.authController
+                                      .currentUser?.profileImage ??
+                                  '',
                               movieId: movie.id.toString(),
                               movieTitle: movie.title,
                               movieYear: movie.releaseDate.split('-')[0],
                               moviePosterUrl: movie.posterUrl,
                               rating: (movie.userRating ?? 0) / 2,
                               content: movie.overview,
-                              watchedDate: DateTime.now(), // TODO: Get actual watch date
+                              watchedDate:
+                                  DateTime.now(), // TODO: Get actual watch date
                               likes: 0,
                               isLiked: false,
                             );
@@ -393,10 +471,10 @@ class ProfilePage extends StatelessWidget {
                       ],
                     ),
                   ),
-                ],
-              ),
-            );
-          }),
+              ],
+            ),
+          );
+        }),
       ),
       bottomNavigationBar: const CustomBottomNav(currentIndex: 3),
     );
@@ -404,10 +482,10 @@ class ProfilePage extends StatelessWidget {
 
   Widget _buildStatItem(String value, String label, Color color) {
     return Column(
-          children: [
-            Text(
+      children: [
+        Text(
           value,
-              style: GoogleFonts.openSans(
+          style: GoogleFonts.openSans(
             fontSize: 24,
             fontWeight: FontWeight.bold,
             color: color,
@@ -424,4 +502,4 @@ class ProfilePage extends StatelessWidget {
       ],
     );
   }
-} 
+}
