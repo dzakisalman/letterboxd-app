@@ -127,21 +127,24 @@ class DrawerMenu extends StatelessWidget {
                     iconPath: 'assets/icons/home.svg',
                     title: 'Home',
                     isSelected: true,
-                    onTap: () => Get.offAllNamed(AppRoutes.home),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      Get.offAllNamed(AppRoutes.home);
+                    },
                   ),
                   _DrawerItem(
                     iconPath: 'assets/icons/films.svg',
                     title: 'Films',
                     onTap: () {
-                      Get.back();
-                      // TODO: Navigate to films
+                      Navigator.of(context).pop();
+                      Get.toNamed(AppRoutes.films);
                     },
                   ),
                   _DrawerItem(
                     iconPath: 'assets/icons/diary.svg',
                     title: 'Diary',
                     onTap: () {
-                      Get.back();
+                      Navigator.of(context).pop();
                       Get.toNamed(AppRoutes.diary);
                     },
                   ),
@@ -149,7 +152,7 @@ class DrawerMenu extends StatelessWidget {
                     iconPath: 'assets/icons/reviews.svg',
                     title: 'Reviews',
                     onTap: () {
-                      Get.back();
+                      Navigator.of(context).pop();
                       // TODO: Navigate to reviews
                     },
                   ),
@@ -157,7 +160,7 @@ class DrawerMenu extends StatelessWidget {
                     iconPath: 'assets/icons/watchlists.svg',
                     title: 'Watchlist',
                     onTap: () {
-                      Get.back();
+                      Navigator.of(context).pop();
                       Get.toNamed(AppRoutes.watchlist);
                     },
                   ),
@@ -165,7 +168,7 @@ class DrawerMenu extends StatelessWidget {
                     iconPath: 'assets/icons/lists.svg',
                     title: 'Lists',
                     onTap: () {
-                      Get.back();
+                      Navigator.of(context).pop();
                       Get.toNamed(AppRoutes.lists);
                     },
                   ),
@@ -173,7 +176,7 @@ class DrawerMenu extends StatelessWidget {
                     iconPath: 'assets/icons/likes.svg',
                     title: 'Likes',
                     onTap: () {
-                      Get.back();
+                      Navigator.of(context).pop();
                       Get.toNamed(AppRoutes.likes);
                     },
                   ),

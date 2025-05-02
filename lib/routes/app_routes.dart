@@ -15,6 +15,7 @@ class AppRoutes {
   static const String explore = '/explore';
   static const String activity = '/activity';
   static const String review = '/review';
+  static const String films = '/films';
 
   static String movieDetailPath(String id) => '/movie/$id';
   

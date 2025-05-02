@@ -7,6 +7,7 @@ import 'package:letterboxd/routes/app_routes.dart';
 import 'package:letterboxd/routes/app_pages.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:letterboxd/features/onboarding/onboarding_page.dart';
+import 'package:letterboxd/features/movie/controllers/movie_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +43,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // Initialize controllers
     Get.put(AuthController());
+    Get.put(MovieController());
 
     return GetMaterialApp(
       title: 'Letterboxd',
