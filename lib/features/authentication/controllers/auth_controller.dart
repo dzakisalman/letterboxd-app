@@ -7,7 +7,7 @@ import 'dart:convert';
 class AuthController extends GetxController {
   final Rx<User?> _currentUser = Rx<User?>(null);
   final _isLoading = false.obs;
-  final _prefs = SharedPreferences.getInstance();
+  late SharedPreferences _prefs;
   String? _sessionId;
 
   User? get currentUser => _currentUser.value;
@@ -16,16 +16,16 @@ class AuthController extends GetxController {
   String? get sessionId => _sessionId;
 
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
+    _prefs = await SharedPreferences.getInstance();
     _loadUser();
   }
 
   Future<void> _loadUser() async {
     try {
-      final prefs = await _prefs;
-      final userJson = prefs.getString('user');
-      final sessionId = prefs.getString('session_id');
+      final userJson = _prefs.getString('user');
+      final sessionId = _prefs.getString('session_id');
       
       if (userJson != null && sessionId != null) {
         final userMap = json.decode(userJson) as Map<String, dynamic>;
@@ -44,10 +44,9 @@ class AuthController extends GetxController {
   }
 
   Future<void> _clearStoredData() async {
-    final prefs = await _prefs;
-    await prefs.remove('user');
-    await prefs.remove('session_id');
-    await prefs.remove('has_seen_onboarding'); // Clear onboarding status
+    await _prefs.remove('user');
+    await _prefs.remove('session_id');
+    await _prefs.remove('has_seen_onboarding'); // Clear onboarding status
     _currentUser.value = null;
     _sessionId = null;
   }
@@ -104,16 +103,14 @@ class AuthController extends GetxController {
       _currentUser.value = user;
 
       // Save user data and session ID
-      final prefs = await _prefs;
-      await prefs.setString('user', json.encode(user.toJson()));
-      await prefs.setString('session_id', _sessionId!);
+      await _prefs.setString('user', json.encode(user.toJson()));
+      await _prefs.setString('session_id', _sessionId!);
 
       return true;
     } catch (e) {
-      await _clearStoredData();
       Get.snackbar(
         'Error',
-        'Failed to login: ${e.toString()}',
+        'Login failed: ${e.toString()}',
         snackPosition: SnackPosition.BOTTOM,
       );
       return false;
