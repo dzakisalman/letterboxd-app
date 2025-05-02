@@ -11,6 +11,8 @@ class ReviewFormPage extends StatefulWidget {
   final String movieTitle;
   final String movieYear;
   final String posterPath;
+  final double? existingRating; // Rating in 5-star scale
+  final bool? isFavorite;
 
   const ReviewFormPage({
     super.key,
@@ -18,6 +20,8 @@ class ReviewFormPage extends StatefulWidget {
     required this.movieTitle,
     required this.movieYear,
     required this.posterPath,
+    this.existingRating,
+    this.isFavorite,
   });
 
   @override
@@ -30,6 +34,18 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
   int _rating = 0;
   bool _isFavorite = false;
   DateTime _watchedDate = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with existing data if available
+    if (widget.existingRating != null) {
+      _rating = widget.existingRating!.round();
+    }
+    if (widget.isFavorite != null) {
+      _isFavorite = widget.isFavorite!;
+    }
+  }
 
   @override
   void dispose() {

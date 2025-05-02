@@ -98,7 +98,10 @@ class MovieDetailController extends GetxController {
         movieData.title,
         movieData.releaseDate.substring(0, 4),
         posterUrl,
-      ));
+      ), arguments: {
+        'existingRating': userRating.value,
+        'isFavorite': isFavorite.value,
+      });
     } else {
       Get.snackbar(
         'Error',

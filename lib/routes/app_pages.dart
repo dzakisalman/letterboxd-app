@@ -43,6 +43,8 @@ class AppPages {
         movieTitle: Uri.decodeComponent(Get.parameters['title'] ?? ''),
         movieYear: Uri.decodeComponent(Get.parameters['year'] ?? ''),
         posterPath: Uri.decodeComponent(Get.parameters['poster'] ?? ''),
+        existingRating: Get.arguments?['existingRating'] as double?,
+        isFavorite: Get.arguments?['isFavorite'] as bool?,
       ),
     ),
     GetPage(
