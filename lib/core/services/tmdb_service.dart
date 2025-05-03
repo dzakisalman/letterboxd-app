@@ -684,6 +684,24 @@ class TMDBService {
   static void clearCache() {
     _cache.clear();
   }
+
+  static Future<String?> getMoviePoster(String tmdbId) async {
+    try {
+      return _makeRequest<String?>(
+        endpoint: '/movie/$tmdbId?api_key=$_apiKey&language=en-US',
+        parser: (data) {
+          final posterPath = data['poster_path'] as String?;
+          if (posterPath != null) {
+            return getImageUrl(posterPath, size: 'w300');
+          }
+          return null;
+        },
+      );
+    } catch (e) {
+      print('[TMDB API] Error getting movie poster: $e');
+      return null;
+    }
+  }
 }
 
 class _CacheEntry {

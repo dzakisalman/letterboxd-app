@@ -10,6 +10,7 @@ import 'package:letterboxd/features/movie/movie_detail_page.dart';
 import 'package:letterboxd/features/review/review_form_page.dart';
 import 'package:letterboxd/features/explore/explore_page.dart';
 import 'package:letterboxd/features/movie/pages/films_page.dart';
+import 'package:letterboxd/features/diary/pages/diary_page.dart';
 
 class AppPages {
   static final routes = [
@@ -59,6 +60,10 @@ class AppPages {
     GetPage(
       name: AppRoutes.films,
       page: () => const FilmsPage(),
+    ),
+    GetPage(
+      name: AppRoutes.diary,
+      page: () => const DiaryPage(),
     ),
   ];
 } 
