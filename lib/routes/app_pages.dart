@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 import 'package:letterboxd/features/review/review_page.dart';
 import 'package:letterboxd/routes/app_routes.dart';
 import 'package:letterboxd/features/authentication/login/login_page.dart';
@@ -11,6 +12,8 @@ import 'package:letterboxd/features/review/review_form_page.dart';
 import 'package:letterboxd/features/explore/explore_page.dart';
 import 'package:letterboxd/features/movie/pages/films_page.dart';
 import 'package:letterboxd/features/diary/pages/diary_page.dart';
+import 'package:letterboxd/features/movie/pages/watchlist_page.dart';
+import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
 
 class AppPages {
   static final routes = [
@@ -65,5 +68,20 @@ class AppPages {
       name: AppRoutes.diary,
       page: () => const DiaryPage(),
     ),
+    GetPage(
+      name: AppRoutes.watchlist,
+      page: () => const WatchlistPage(),
+      middlewares: [
+        RouteGuard(),
+      ],
+    ),
   ];
+}
+
+class RouteGuard extends GetMiddleware {
+  @override
+  RouteSettings? redirect(String? route) {
+    final authController = Get.find<AuthController>();
+    return authController.isLoggedIn ? null : const RouteSettings(name: AppRoutes.login);
+  }
 } 

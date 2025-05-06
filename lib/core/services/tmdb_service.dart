@@ -702,6 +702,44 @@ class TMDBService {
       return null;
     }
   }
+
+  static Future<List<Movie>> getWatchlist(String sessionId) async {
+    try {
+      print('[TMDB] Getting watchlist...');
+      
+      // Get account details first to get the account ID
+      final accountDetails = await getAccountDetails(sessionId);
+      final accountId = accountDetails['id'];
+
+      print('[TMDB] Got account ID: $accountId');
+      
+      final response = await http.get(
+        Uri.parse('$_baseUrl/account/$accountId/watchlist/movies?api_key=$_apiKey&session_id=$sessionId&language=en-US&sort_by=created_at.desc&page=1'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${ApiService.accessToken}',
+        },
+      ).timeout(_timeout);
+
+      print('[TMDB] Watchlist response status: ${response.statusCode}');
+      print('[TMDB] Watchlist response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final results = data['results'] as List;
+        final movies = results.map((movie) => Movie.fromJson(movie)).toList();
+        print('[TMDB] Successfully parsed ${movies.length} watchlist movies');
+        return movies;
+      } else {
+        print('[TMDB] Failed to get watchlist. Status: ${response.statusCode}');
+        throw Exception('Failed to get watchlist. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('[TMDB] Error getting watchlist: $e');
+      rethrow;
+    }
+  }
 }
 
 class _CacheEntry {

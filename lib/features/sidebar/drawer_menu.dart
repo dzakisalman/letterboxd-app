@@ -161,7 +161,16 @@ class DrawerMenu extends StatelessWidget {
                     title: 'Watchlist',
                     onTap: () {
                       Navigator.of(context).pop();
-                      Get.toNamed(AppRoutes.watchlist);
+                      if (authController.isLoggedIn) {
+                        Get.toNamed(AppRoutes.watchlist);
+                      } else {
+                        Get.snackbar(
+                          'Login Required',
+                          'Please login to access your watchlist',
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                        Get.toNamed(AppRoutes.login);
+                      }
                     },
                   ),
                   _DrawerItem(
