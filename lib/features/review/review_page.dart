@@ -5,6 +5,7 @@ import 'package:letterboxd/features/review/controllers/review_controller.dart';
 import 'package:letterboxd/features/review/models/review.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 
 class ReviewPage extends StatelessWidget {
   final Review review;
@@ -14,11 +15,62 @@ class ReviewPage extends StatelessWidget {
     required this.review,
   }) : super(key: key);
 
+  String _getAvatarUrl(String username) {
+    print('[ReviewPage] Getting avatar URL for user: $username');
+    
+    // Get the original avatar URL from the review
+    final originalAvatarUrl = review.userAvatarUrl;
+    print('[ReviewPage] Original avatar URL: $originalAvatarUrl');
+    
+    if (originalAvatarUrl.isEmpty) {
+      final generatedUrl = 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(username)}&background=random';
+      print('[ReviewPage] Using generated avatar: $generatedUrl');
+      return generatedUrl;
+    }
+
+    // Handle Gravatar URLs
+    if (originalAvatarUrl.startsWith('https://secure.gravatar.com')) {
+      print('[ReviewPage] Using Gravatar URL directly: $originalAvatarUrl');
+      return originalAvatarUrl;
+    }
+
+    // Handle TMDB URLs
+    if (originalAvatarUrl.startsWith('https://image.tmdb.org')) {
+      print('[ReviewPage] Using TMDB URL directly: $originalAvatarUrl');
+      return originalAvatarUrl;
+    }
+
+    // Handle TMDB paths
+    if (originalAvatarUrl.startsWith('/')) {
+      final tmdbUrl = 'https://image.tmdb.org/t/p/w185$originalAvatarUrl';
+      print('[ReviewPage] Using TMDB path: $tmdbUrl');
+      return tmdbUrl;
+    }
+
+    // Handle other direct URLs
+    if (originalAvatarUrl.startsWith('http')) {
+      print('[ReviewPage] Using direct URL: $originalAvatarUrl');
+      return originalAvatarUrl;
+    }
+
+    // Handle relative paths
+    final tmdbUrl = 'https://image.tmdb.org/t/p/w185/$originalAvatarUrl';
+    print('[ReviewPage] Using relative path with TMDB base: $tmdbUrl');
+    return tmdbUrl;
+  }
+
   @override
   Widget build(BuildContext context) {
+    print('[ReviewPage] Building review page for user: ${review.username}');
+    print('[ReviewPage] Review ID: ${review.id}');
+    print('[ReviewPage] Movie: ${review.movieTitle} (${review.movieYear})');
+
     final controller = Get.put(ReviewController());
     controller.likeCount.value = review.likes;
     controller.isLiked.value = review.isLiked;
+
+    final avatarUrl = _getAvatarUrl(review.username);
+    print('[ReviewPage] Final avatar URL to be used: $avatarUrl');
 
     return Scaffold(
       backgroundColor: const Color(0xFF1F1D36),
@@ -145,46 +197,64 @@ class ReviewPage extends StatelessWidget {
                     Row(
                       children: [
                         CircleAvatar(
-                          radius: 24,
+                          radius: 20,
                           backgroundColor: Colors.grey[800],
-                          child: review.userAvatarUrl.isNotEmpty
-                              ? ClipOval(
-                                  child: CachedNetworkImage(
-                                    imageUrl: review.userAvatarUrl,
-                                    width: 48,
-                                    height: 48,
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) => const Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white38,
-                                      ),
-                                    ),
-                                    errorWidget: (context, url, error) => Text(
-                                      review.username[0].toUpperCase(),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
+                          child: ClipOval(
+                            child: CachedNetworkImage(
+                              imageUrl: avatarUrl,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              memCacheWidth: 80,
+                              memCacheHeight: 80,
+                              maxWidthDiskCache: 80,
+                              maxHeightDiskCache: 80,
+                              placeholder: (context, url) {
+                                print('[ReviewPage] Loading avatar placeholder for: $url');
+                                return const Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white38,
                                   ),
-                                )
-                              : Text(
+                                );
+                              },
+                              errorWidget: (context, url, error) {
+                                print('[ReviewPage] Error loading avatar: $error');
+                                print('[ReviewPage] Failed URL: $url');
+                                if (error is Error) {
+                                  print('[ReviewPage] Error stack trace: ${error.stackTrace}');
+                                }
+                                return Text(
                                   review.username[0].toUpperCase(),
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 20,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                   ),
-                                ),
+                                );
+                              },
+                              imageBuilder: (context, imageProvider) {
+                                print('[ReviewPage] Successfully loaded avatar for: ${review.username}');
+                                return Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: imageProvider,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Text(
                           review.username,
                           style: const TextStyle(
                             color: Colors.grey,
-                            fontSize: 18,
+                            fontSize: 16,
                           ),
                         ),
                       ],
@@ -202,7 +272,7 @@ class ReviewPage extends StatelessWidget {
                                 review.movieTitle,
                                 style: const TextStyle(
                                   color: Colors.white,
-                                  fontSize: 24,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -211,7 +281,7 @@ class ReviewPage extends StatelessWidget {
                                 review.movieYear,
                                 style: const TextStyle(
                                   color: Colors.grey,
-                                  fontSize: 18,
+                                  fontSize: 16,
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -220,13 +290,22 @@ class ReviewPage extends StatelessWidget {
                                 children: [
                                   ...List.generate(5, (index) {
                                     if (index < review.rating) {
-                                      return const Icon(Icons.star, color: Colors.green, size: 20);
+                                      return const Icon(Icons.star, color: Colors.green, size: 16);
                                     }
-                                    return const Icon(Icons.star_border, color: Colors.green, size: 20);
+                                    return const Icon(Icons.star_border, color: Colors.green, size: 16);
                                   }),
                                   const SizedBox(width: 8),
-                                  const Icon(Icons.favorite, color: Colors.orange, size: 20),
+                                  const Icon(Icons.favorite, color: Colors.orange, size: 16),
                                 ],
+                              ),
+                              const SizedBox(height: 9),
+                              // Watch Date
+                              Text(
+                                'Watched ${DateFormat('d MMMM y').format(review.watchedDate)}',
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 12,
+                                ),
                               ),
                             ],
                           ),
@@ -245,51 +324,14 @@ class ReviewPage extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    // Watch Date
-                    Text(
-                      'Watched ${DateFormat('d MMMM y').format(review.watchedDate)}',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
                     // Review Text
                     Text(
                       review.content,
                       style: const TextStyle(
                         color: Colors.grey,
-                        fontSize: 16,
+                        fontSize: 14,
                         height: 1.5,
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    // Like Section
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: controller.toggleLike,
-                          child: Row(
-                            children: [
-                              const Text(
-                                'LIKE?',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Obx(() => Text(
-                                '${controller.likeCount} like${controller.likeCount.value != 1 ? 's' : ''}',
-                                style: TextStyle(
-                                  color: controller.isLiked.value ? Colors.green : Colors.grey,
-                                  fontSize: 14,
-                                ),
-                              )),
-                            ],
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),

@@ -601,21 +601,23 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                 children: controller.reviews.take(3).map((review) {
                                   final authorDetails = review['author_details'] ?? {};
                                   final avatarPath = authorDetails['avatar_path']?.toString();
-                                  String? avatarUrl;
                                   
+                                  print('[MovieDetail] Raw review data: ${review.toString()}');
+                                  print('[MovieDetail] Raw author details: ${authorDetails.toString()}');
                                   print('[MovieDetail] Original avatar_path: $avatarPath');
                                   
+                                  String? avatarUrl;
                                   if (avatarPath != null && avatarPath.isNotEmpty) {
                                     if (avatarPath.startsWith('/http') || avatarPath.startsWith('http')) {
                                       avatarUrl = avatarPath.startsWith('/') ? avatarPath.substring(1) : avatarPath;
-                                      print('[MovieDetail] Full URL avatar: $avatarUrl');
+                                      print('[MovieDetail] Using direct URL avatar: $avatarUrl');
                                     } else {
                                       avatarUrl = 'https://image.tmdb.org/t/p/w185$avatarPath';
-                                      print('[MovieDetail] TMDB path avatar: $avatarUrl');
+                                      print('[MovieDetail] Using TMDB path avatar: $avatarUrl');
                                     }
                                   } else {
                                     avatarUrl = 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(review['author'] ?? 'Anonymous')}&background=random';
-                                    print('[MovieDetail] Generated avatar: $avatarUrl');
+                                    print('[MovieDetail] Using generated avatar: $avatarUrl');
                                   }
                                   
                                   print('[MovieDetail] Final avatar URL: $avatarUrl');
@@ -635,7 +637,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                         id: review['id'].toString(),
                                         userId: authorDetails['id']?.toString() ?? 'unknown',
                                         username: review['author'] ?? 'Anonymous',
-                                        userAvatarUrl: avatarUrl ?? '',
+                                        userAvatarUrl: avatarPath ?? '',  // Use original avatar_path instead of generated URL
                                         movieId: movie.id.toString(),
                                         movieTitle: movie.title,
                                         movieYear: movie.releaseDate.split('-')[0],
@@ -646,6 +648,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                         likes: 0,
                                         isLiked: false,
                                       );
+                                      print('[MovieDetail] Created Review object with avatar path: ${reviewObj.userAvatarUrl}');
                                       Get.toNamed(AppRoutes.review, arguments: reviewObj);
                                     },
                                   );
