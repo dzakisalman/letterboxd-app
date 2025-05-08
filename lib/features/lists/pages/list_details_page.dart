@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:letterboxd/core/models/movie.dart';
 import 'package:letterboxd/features/lists/controllers/list_details_controller.dart';
+import 'package:letterboxd/features/lists/pages/edit_list_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class ListDetailsPage extends StatelessWidget {
@@ -39,6 +40,20 @@ class ListDetailsPage extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Get.back(),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () async {
+              final result = await Get.to(() => EditListPage(
+                    list: list,
+                    movies: controller.movies,
+                  ));
+              if (result == true) {
+                controller.refreshList();
+              }
+            },
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async => controller.refreshList(),

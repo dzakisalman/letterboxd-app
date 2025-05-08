@@ -742,23 +742,106 @@ class TMDBService {
     }
   }
 
+  static Future<Map<String, dynamic>> addMoviesToList(String listId, List<Movie> movies) async {
+    print('\n[TMDB] ===== Adding Movies to List =====');
+    print('[TMDB] List ID: $listId');
+    print('[TMDB] Number of movies to add: ${movies.length}');
+    movies.forEach((movie) {
+      print('[TMDB] - ${movie.title} (ID: ${movie.id})');
+    });
+
+    try {
+      // Get session ID from auth controller
+      final authController = Get.find<AuthController>();
+      final sessionId = authController.sessionId;
+      
+      if (sessionId == null) {
+        throw Exception('User not logged in');
+      }
+
+      print('[TMDB] Session ID: $sessionId');
+      print('[TMDB] Sending request to add movies...');
+      
+      // Add movies one by one to avoid potential issues with bulk adding
+      for (final movie in movies) {
+        print('[TMDB] Adding movie: ${movie.title} (ID: ${movie.id})');
+        
+        final response = await http.post(
+          Uri.parse('$_baseUrl/list/$listId/add_item?api_key=$_apiKey&session_id=$sessionId'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ${ApiService.accessToken}',
+          },
+          body: jsonEncode({
+            'media_id': movie.id,
+            'media_type': 'movie',
+          }),
+        );
+
+        print('[TMDB] Response status code: ${response.statusCode}');
+        print('[TMDB] Response body: ${response.body}');
+
+        if (response.statusCode != 201) {
+          final responseData = jsonDecode(response.body);
+          final errorMessage = responseData['status_message'] ?? 'Failed to add movie to list';
+          print('[TMDB] Failed to add movie ${movie.title}. Error: $errorMessage');
+          return {
+            'success': false,
+            'error_code': responseData['status_code'] ?? 500,
+            'error_message': errorMessage,
+          };
+        }
+      }
+
+      print('[TMDB] All movies added successfully');
+      return {
+        'success': true,
+        'message': 'Movies added successfully',
+      };
+    } catch (e) {
+      print('[TMDB] Exception occurred while adding movies: $e');
+      return {
+        'success': false,
+        'error_code': 500,
+        'error_message': 'An unexpected error occurred. Please try again later.',
+      };
+    } finally {
+      print('[TMDB] ===== End Add Movies Process =====\n');
+    }
+  }
+
   static Future<Map<String, dynamic>> createList({
     required String name,
     required String description,
     String language = 'id',
+    List<Movie> items = const [],
   }) async {
     print('\n[TMDB] ===== Creating New List =====');
     print('[TMDB] List Name: $name');
     print('[TMDB] Description: $description');
     print('[TMDB] Language: $language');
+    print('[TMDB] Number of items: ${items.length}');
+    items.forEach((movie) {
+      print('[TMDB] - ${movie.title} (ID: ${movie.id})');
+    });
 
     try {
+      // Get session ID from auth controller
+      final authController = Get.find<AuthController>();
+      final sessionId = authController.sessionId;
+      
+      if (sessionId == null) {
+        throw Exception('User not logged in');
+      }
+
+      print('[TMDB] Session ID: $sessionId');
       print('[TMDB] Sending request to create list...');
+      
       final response = await http.post(
-        Uri.parse('https://api.themoviedb.org/3/list'),
+        Uri.parse('$_baseUrl/list?api_key=$_apiKey&session_id=$sessionId'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${dotenv.env['TMDB_ACCESS_TOKEN']}',
+          'Authorization': 'Bearer ${ApiService.accessToken}',
         },
         body: jsonEncode({
           'name': name,
@@ -773,10 +856,20 @@ class TMDBService {
       final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 201) {
-        print('[TMDB] List created successfully with ID: ${responseData['list_id']}');
+        final listId = responseData['list_id'].toString();
+        print('[TMDB] List created successfully with ID: $listId');
+
+        // Add movies to the list if there are any
+        if (items.isNotEmpty) {
+          final addResult = await addMoviesToList(listId, items);
+          if (!addResult['success']) {
+            print('[TMDB] Warning: Failed to add movies to list: ${addResult['error_message']}');
+          }
+        }
+
         return {
           'success': true,
-          'list_id': responseData['list_id'],
+          'list_id': listId,
           'message': 'List created successfully',
         };
       } else {
@@ -896,6 +989,151 @@ class TMDBService {
       rethrow;
     } finally {
       print('[TMDB] ===== End Get List Details Process =====\n');
+    }
+  }
+
+  static Future<Map<String, dynamic>> updateList({
+    required String listId,
+    required String name,
+    required String description,
+    String language = 'id',
+  }) async {
+    print('\n[TMDB] ===== Updating List =====');
+    print('[TMDB] List ID: $listId');
+    print('[TMDB] New Name: $name');
+    print('[TMDB] New Description: $description');
+    print('[TMDB] Language: $language');
+
+    try {
+      final authController = Get.find<AuthController>();
+      final sessionId = authController.sessionId;
+      
+      if (sessionId == null) {
+        throw Exception('User not logged in');
+      }
+
+      print('[TMDB] Session ID: $sessionId');
+      print('[TMDB] Sending request to update list...');
+
+      // Pertama, cek apakah list ada
+      final checkResponse = await http.get(
+        Uri.parse('$_baseUrl/list/$listId?api_key=$_apiKey'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${ApiService.accessToken}',
+        },
+      );
+
+      print('[TMDB] Check list response status: ${checkResponse.statusCode}');
+      print('[TMDB] Check list response body: ${checkResponse.body}');
+
+      if (checkResponse.statusCode != 200) {
+        throw Exception('List not found or not accessible');
+      }
+      
+      // Update list menggunakan endpoint yang benar
+      final response = await http.post(
+        Uri.parse('$_baseUrl/list/$listId?api_key=$_apiKey&session_id=$sessionId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${ApiService.accessToken}',
+        },
+        body: jsonEncode({
+          'name': name,
+          'description': description,
+          'language': language,
+        }),
+      );
+
+      print('[TMDB] Update response status code: ${response.statusCode}');
+      print('[TMDB] Update response body: ${response.body}');
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        print('[TMDB] List updated successfully');
+        return {
+          'success': true,
+          'message': 'List updated successfully',
+        };
+      } else {
+        final errorMessage = responseData['status_message'] ?? 'Failed to update list';
+        print('[TMDB] Failed to update list. Error: $errorMessage');
+        return {
+          'success': false,
+          'error_code': responseData['status_code'] ?? 500,
+          'error_message': errorMessage,
+        };
+      }
+    } catch (e) {
+      print('[TMDB] Exception occurred while updating list: $e');
+      return {
+        'success': false,
+        'error_code': 500,
+        'error_message': 'An unexpected error occurred. Please try again later.',
+      };
+    } finally {
+      print('[TMDB] ===== End Update List Process =====\n');
+    }
+  }
+
+  static Future<Map<String, dynamic>> removeMovieFromList(String listId, int movieId) async {
+    print('\n[TMDB] ===== Removing Movie from List =====');
+    print('[TMDB] List ID: $listId');
+    print('[TMDB] Movie ID: $movieId');
+
+    try {
+      final authController = Get.find<AuthController>();
+      final sessionId = authController.sessionId;
+      
+      if (sessionId == null) {
+        throw Exception('User not logged in');
+      }
+
+      print('[TMDB] Session ID: $sessionId');
+      print('[TMDB] Sending request to remove movie...');
+      
+      final response = await http.post(
+        Uri.parse('$_baseUrl/list/$listId/remove_item?api_key=$_apiKey&session_id=$sessionId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${ApiService.accessToken}',
+        },
+        body: jsonEncode({
+          'media_id': movieId,
+          'media_type': 'movie',
+        }),
+      );
+
+      print('[TMDB] Response status code: ${response.statusCode}');
+      print('[TMDB] Response body: ${response.body}');
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        print('[TMDB] Movie removed successfully');
+        return {
+          'success': true,
+          'message': 'Movie removed successfully',
+        };
+      } else {
+        final errorMessage = responseData['status_message'] ?? 'Failed to remove movie from list';
+        print('[TMDB] Failed to remove movie. Error: $errorMessage');
+        return {
+          'success': false,
+          'error_code': responseData['status_code'] ?? 500,
+          'error_message': errorMessage,
+        };
+      }
+    } catch (e) {
+      print('[TMDB] Exception occurred while removing movie: $e');
+      return {
+        'success': false,
+        'error_code': 500,
+        'error_message': 'An unexpected error occurred. Please try again later.',
+      };
+    } finally {
+      print('[TMDB] ===== End Remove Movie Process =====\n');
     }
   }
 }
