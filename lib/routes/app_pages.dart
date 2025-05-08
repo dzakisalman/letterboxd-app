@@ -14,6 +14,7 @@ import 'package:letterboxd/features/movie/pages/films_page.dart';
 import 'package:letterboxd/features/diary/pages/diary_page.dart';
 import 'package:letterboxd/features/movie/pages/watchlist_page.dart';
 import 'package:letterboxd/features/movie/pages/likes_page.dart';
+import 'package:letterboxd/features/lists/pages/lists_page.dart';
 import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
 
 class AppPages {
@@ -79,6 +80,13 @@ class AppPages {
     GetPage(
       name: AppRoutes.likes,
       page: () => const LikesPage(),
+      middlewares: [
+        RouteGuard(),
+      ],
+    ),
+    GetPage(
+      name: AppRoutes.lists,
+      page: () => const ListsPage(),
       middlewares: [
         RouteGuard(),
       ],
