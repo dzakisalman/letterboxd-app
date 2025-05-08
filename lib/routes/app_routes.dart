@@ -11,6 +11,7 @@ class AppRoutes {
   static const String watchlist = '/watchlist';
   static const String diary = '/diary';
   static const String lists = '/lists';
+  static const String createList = '/lists/create';
   static const String likes = '/likes';
   static const String explore = '/explore';
   static const String activity = '/activity';

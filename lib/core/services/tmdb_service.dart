@@ -4,6 +4,7 @@ import 'package:letterboxd/core/models/movie.dart';
 import 'package:letterboxd/core/services/api_service.dart';
 import 'package:get/get.dart';
 import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class TMDBService {
   static const String _baseUrl = 'https://api.themoviedb.org/3';
@@ -738,6 +739,163 @@ class TMDBService {
     } catch (e) {
       print('[TMDB] Error getting watchlist: $e');
       rethrow;
+    }
+  }
+
+  static Future<Map<String, dynamic>> createList({
+    required String name,
+    required String description,
+    String language = 'id',
+  }) async {
+    print('\n[TMDB] ===== Creating New List =====');
+    print('[TMDB] List Name: $name');
+    print('[TMDB] Description: $description');
+    print('[TMDB] Language: $language');
+
+    try {
+      print('[TMDB] Sending request to create list...');
+      final response = await http.post(
+        Uri.parse('https://api.themoviedb.org/3/list'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${dotenv.env['TMDB_ACCESS_TOKEN']}',
+        },
+        body: jsonEncode({
+          'name': name,
+          'description': description,
+          'language': language,
+        }),
+      );
+
+      print('[TMDB] Response status code: ${response.statusCode}');
+      print('[TMDB] Response body: ${response.body}');
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 201) {
+        print('[TMDB] List created successfully with ID: ${responseData['list_id']}');
+        return {
+          'success': true,
+          'list_id': responseData['list_id'],
+          'message': 'List created successfully',
+        };
+      } else {
+        // Handle error response
+        final errorMessage = responseData['errors'] != null && (responseData['errors'] as List).isNotEmpty
+            ? (responseData['errors'] as List).first.toString()
+            : responseData['status_message'] ?? 'Failed to create list';
+            
+        print('[TMDB] Failed to create list. Error: $errorMessage');
+        return {
+          'success': false,
+          'error_code': responseData['status_code'] ?? 500,
+          'error_message': errorMessage,
+        };
+      }
+    } catch (e) {
+      print('[TMDB] Exception occurred while creating list: $e');
+      return {
+        'success': false,
+        'error_code': 500,
+        'error_message': 'An unexpected error occurred. Please try again later.',
+      };
+    } finally {
+      print('[TMDB] ===== End Create List Process =====\n');
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getLists(String sessionId) async {
+    print('\n[TMDB] ===== Getting User Lists =====');
+    try {
+      // Get account details first to get the account ID
+      final accountDetails = await getAccountDetails(sessionId);
+      final accountId = accountDetails['id'];
+
+      print('[TMDB] Got account ID: $accountId');
+      
+      final response = await http.get(
+        Uri.parse('$_baseUrl/account/$accountId/lists?api_key=$_apiKey&session_id=$sessionId&language=en-US&page=1'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${ApiService.accessToken}',
+        },
+      ).timeout(_timeout);
+
+      print('[TMDB] Lists response status: ${response.statusCode}');
+      print('[TMDB] Lists response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final results = data['results'] as List;
+        final lists = results.map((list) => {
+          'id': list['id'],
+          'name': list['name'],
+          'description': list['description'],
+          'item_count': list['item_count'],
+          'created_at': list['created_at'],
+          'updated_at': list['updated_at'],
+        }).toList();
+        
+        print('[TMDB] Successfully parsed ${lists.length} lists');
+        return lists;
+      } else {
+        print('[TMDB] Failed to get lists. Status: ${response.statusCode}');
+        throw Exception('Failed to get lists. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('[TMDB] Error getting lists: $e');
+      rethrow;
+    } finally {
+      print('[TMDB] ===== End Get Lists Process =====\n');
+    }
+  }
+
+  static Future<Map<String, dynamic>> getListDetails(String listId) async {
+    print('\n[TMDB] ===== Getting List Details =====');
+    print('[TMDB] List ID: $listId');
+
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/list/$listId?api_key=$_apiKey&language=en-US'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${ApiService.accessToken}',
+        },
+      ).timeout(_timeout);
+
+      print('[TMDB] Response status: ${response.statusCode}');
+      print('[TMDB] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final items = data['items'] as List;
+        final movies = items.map((movie) => Movie.fromJson(movie)).toList();
+        
+        print('[TMDB] Successfully parsed ${movies.length} movies');
+        return {
+          'success': true,
+          'list': {
+            'id': data['id'],
+            'name': data['name'],
+            'description': data['description'],
+            'created_by': data['created_by'],
+            'item_count': data['item_count'],
+            'created_at': data['created_at'],
+            'updated_at': data['updated_at'],
+          },
+          'movies': movies,
+        };
+      } else {
+        print('[TMDB] Failed to get list details. Status: ${response.statusCode}');
+        throw Exception('Failed to get list details. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('[TMDB] Error getting list details: $e');
+      rethrow;
+    } finally {
+      print('[TMDB] ===== End Get List Details Process =====\n');
     }
   }
 }
