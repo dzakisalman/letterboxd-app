@@ -132,29 +132,31 @@ class ReviewCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Movie title and year
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Text(
-                      movieTitle,
-                      style: GoogleFonts.openSans(
-                        color: Colors.white,
-                        fontSize: isDetailPage ? 14 : 11,
-                        fontWeight: FontWeight.w600,
+                if (!isDetailPage) ...[
+                  // Movie title and year
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        movieTitle,
+                        style: GoogleFonts.openSans(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    Text(
-                      ' $movieYear',
-                      style: GoogleFonts.openSans(
-                        color: Colors.grey[400],
-                        fontSize: isDetailPage ? 11 : 8,
+                      Text(
+                        ' $movieYear',
+                        style: GoogleFonts.openSans(
+                          color: Colors.grey[400],
+                          fontSize: 11,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                ],
                 // Reviewed by
                 Row(
                   children: [
