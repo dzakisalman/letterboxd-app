@@ -5,6 +5,7 @@ import 'package:letterboxd/features/movie/controllers/movie_controller.dart';
 import 'package:letterboxd/features/movie/widgets/movie_card.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:letterboxd/core/widgets/star_rating.dart';
 
 class FilmsPage extends StatefulWidget {
   const FilmsPage({super.key});
@@ -182,40 +183,7 @@ class _FilmsPageState extends State<FilmsPage> {
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                ...List.generate(5, (index) {
-                                  final rating = movie.userRating! / 2; // Convert to 5-star scale
-                                  final fullStars = rating.floor();
-                                  final hasHalfStar = rating - fullStars >= 0.5;
-
-                                  if (index < fullStars) {
-                                    return Padding(
-                                      padding: const EdgeInsets.only(right: 2),
-                                      child: SvgPicture.asset(
-                                        'assets/icons/star.svg',
-                                        colorFilter: const ColorFilter.mode(
-                                          Color(0xFFE53935),
-                                          BlendMode.srcIn,
-                                        ),
-                                        width: 14,
-                                        height: 14,
-                                      ),
-                                    );
-                                  } else if (index == fullStars && hasHalfStar) {
-                                    return Padding(
-                                      padding: const EdgeInsets.only(right: 2),
-                                      child: SvgPicture.asset(
-                                        'assets/icons/halfstar.svg',
-                                        colorFilter: const ColorFilter.mode(
-                                          Color(0xFFE53935),
-                                          BlendMode.srcIn,
-                                        ),
-                                        width: 14,
-                                        height: 14,
-                                      ),
-                                    );
-                                  }
-                                  return const SizedBox.shrink();
-                                }),
+                                StarRating(rating: movie.userRating!),
                               ],
                             ),
                           ],

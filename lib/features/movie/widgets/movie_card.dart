@@ -4,6 +4,7 @@ import 'package:letterboxd/core/models/movie.dart';
 import 'package:letterboxd/routes/app_routes.dart';
 import 'package:get/get.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:letterboxd/core/widgets/star_rating.dart';
 
 class MovieCard extends StatelessWidget {
   final Movie movie;
@@ -47,40 +48,7 @@ class MovieCard extends StatelessWidget {
             if (movie.userRating != null) ...[
               Row(
                 children: [
-                  ...List.generate(5, (index) {
-                    final rating = movie.userRating! / 2; // Convert to 5-star scale
-                    final fullStars = rating.floor();
-                    final hasHalfStar = rating - fullStars >= 0.5;
-
-                    if (index < fullStars) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 2),
-                        child: SvgPicture.asset(
-                          'assets/icons/star.svg',
-                          colorFilter: const ColorFilter.mode(
-                            Color(0xFFE53935),
-                            BlendMode.srcIn,
-                          ),
-                          width: 12,
-                          height: 12,
-                        ),
-                      );
-                    } else if (index == fullStars && hasHalfStar) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 2),
-                        child: SvgPicture.asset(
-                          'assets/icons/halfstar.svg',
-                          colorFilter: const ColorFilter.mode(
-                            Color(0xFFE53935),
-                            BlendMode.srcIn,
-                          ),
-                          width: 12,
-                          height: 12,
-                        ),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  }),
+                  StarRating(rating: movie.userRating!),
                 ],
               ),
               const SizedBox(height: 4),

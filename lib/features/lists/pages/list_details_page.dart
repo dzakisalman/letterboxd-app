@@ -9,6 +9,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:letterboxd/core/widgets/star_rating.dart';
 
 class ListDetailsPage extends StatefulWidget {
   final Map<String, dynamic> list;
@@ -328,7 +329,8 @@ class MovieListItem extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    if (movie.voteAverage != null) ..._buildStarRating(movie.voteAverage!),
+                    if (movie.voteAverage != null)
+                      StarRating(rating: movie.voteAverage!),
                   ],
                 ),
               ],
@@ -337,38 +339,5 @@ class MovieListItem extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  List<Widget> _buildStarRating(double rating) {
-    // rating is 0-10, but userRating is 0-10 (from API), so convert to 0-5 stars
-    final double starRating = (rating / 2).clamp(0, 5);
-    final int fullStars = starRating.floor();
-    final bool hasHalfStar = (starRating - fullStars) >= 0.5;
-    final List<Widget> stars = [];
-    for (int i = 0; i < 5; i++) {
-      if (i < fullStars) {
-        stars.add(Padding(
-          padding: const EdgeInsets.only(right: 2),
-          child: SvgPicture.asset(
-            'assets/icons/star.svg',
-            colorFilter: const ColorFilter.mode(Color(0xFFE9A6A6), BlendMode.srcIn),
-            width: 16,
-            height: 16,
-          ),
-        ));
-      } else if (i == fullStars && hasHalfStar) {
-        stars.add(Padding(
-          padding: const EdgeInsets.only(right: 2),
-          child: SvgPicture.asset(
-            'assets/icons/halfstar.svg',
-            colorFilter: const ColorFilter.mode(Color(0xFFE9A6A6), BlendMode.srcIn),
-            width: 16,
-            height: 16,
-          ),
-        ));
-      }
-      // Do not add empty/gray stars
-    }
-    return stars;
   }
 } 

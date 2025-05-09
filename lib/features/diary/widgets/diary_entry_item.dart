@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../models/diary_entry.dart';
 import '../../../core/services/tmdb_service.dart';
 import '../../../routes/app_routes.dart';
+import '../../../core/widgets/star_rating.dart';
 
 class DiaryEntryItem extends StatelessWidget {
   final DiaryEntry entry;
@@ -16,44 +17,6 @@ class DiaryEntryItem extends StatelessWidget {
     required this.entry,
     required this.dayNumber,
   });
-
-  Widget _buildRatingStars(double rating) {
-    return Row(
-      children: List.generate(5, (index) {
-        final fullStars = rating.floor();
-        final hasHalfStar = rating - fullStars >= 0.5;
-
-        if (index < fullStars) {
-          return Padding(
-            padding: const EdgeInsets.only(right: 2),
-            child: SvgPicture.asset(
-              'assets/icons/star.svg',
-              colorFilter: const ColorFilter.mode(
-                Color(0xFFE53935),
-                BlendMode.srcIn,
-              ),
-              width: 12,
-              height: 12,
-            ),
-          );
-        } else if (index == fullStars && hasHalfStar) {
-          return Padding(
-            padding: const EdgeInsets.only(right: 2),
-            child: SvgPicture.asset(
-              'assets/icons/halfstar.svg',
-              colorFilter: const ColorFilter.mode(
-                Color(0xFFE53935),
-                BlendMode.srcIn,
-              ),
-              width: 12,
-              height: 12,
-            ),
-          );
-        }
-        return const SizedBox.shrink();
-      }),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -154,7 +117,7 @@ class DiaryEntryItem extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  _buildRatingStars(entry.userRating / 2), // Convert 10-point scale to 5-point scale
+                  StarRating(rating: entry.userRating),
                 ],
               ),
             ),
