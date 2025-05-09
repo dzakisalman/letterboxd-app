@@ -6,8 +6,11 @@ import 'package:letterboxd/core/models/movie.dart';
 import 'package:letterboxd/features/lists/controllers/list_details_controller.dart';
 import 'package:letterboxd/features/lists/pages/edit_list_page.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-class ListDetailsPage extends StatelessWidget {
+class ListDetailsPage extends StatefulWidget {
   final Map<String, dynamic> list;
 
   const ListDetailsPage({
@@ -16,36 +19,53 @@ class ListDetailsPage extends StatelessWidget {
   });
 
   @override
+  State<ListDetailsPage> createState() => _ListDetailsPageState();
+}
+
+class _ListDetailsPageState extends State<ListDetailsPage> {
+  String _sortBy = 'vote_average.desc';
+
+  @override
   Widget build(BuildContext context) {
-    final controller = Get.put(ListDetailsController(listId: list['id'].toString()));
-    final createdAt = list['created_at'] != null 
-        ? DateTime.parse(list['created_at'])
+    final controller = Get.put(ListDetailsController(listId: widget.list['id'].toString()));
+    final createdAt = widget.list['created_at'] != null 
+        ? DateTime.parse(widget.list['created_at'])
         : DateTime.now();
     final formattedDate = DateFormat('MMM d, y').format(createdAt);
+    final authController = Get.find<AuthController>();
+    final String displayName = authController.currentUser?.name ?? 'Unknown';
+    final String? avatarUrl = authController.currentUser?.profileImage;
 
     return Scaffold(
       backgroundColor: const Color(0xFF1F1D36),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1F1D36),
         elevation: 0,
-        title: Text(
-          list['name'] ?? 'Untitled List',
-          style: GoogleFonts.openSans(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        title: Text('List', style: GoogleFonts.openSans(fontWeight: FontWeight.w600)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Get.back(),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit),
+            icon: const Icon(Icons.sort, color: Colors.white),
+            onPressed: () async {
+              final selected = await showDialog<String>(
+                context: context,
+                builder: (context) => _SortDialog(selected: _sortBy),
+              );
+              if (selected != null && selected != _sortBy) {
+                setState(() {
+                  _sortBy = selected;
+                });
+              }
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.white),
             onPressed: () async {
               final result = await Get.to(() => EditListPage(
-                    list: list,
+                    list: widget.list,
                     movies: controller.movies,
                   ));
               if (result == true) {
@@ -53,250 +73,302 @@ class ListDetailsPage extends StatelessWidget {
               }
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.white),
+            onPressed: () {
+              // TODO: Implement delete functionality
+            },
+          ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: () async => controller.refreshList(),
         color: const Color(0xFFE9A6A6),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        child: Obx(() {
+          if (controller.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (controller.error != null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Error loading movies', style: GoogleFonts.openSans(color: Colors.white)),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: controller.refreshList,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE9A6A6),
+                      foregroundColor: Colors.black,
+                    ),
+                    child: const Text('Try Again'),
+                  ),
+                ],
+              ),
+            );
+          }
+          // Sorting logic
+          List<Movie> sortedMovies = List.from(controller.movies);
+          sortedMovies.sort((a, b) => _compareMovies(a, b, _sortBy));
+          return ListView(
+            padding: EdgeInsets.zero,
             children: [
-              // Header Section
+              // HEADER
               Container(
-                padding: const EdgeInsets.all(16),
-                color: const Color(0xFF3D3B54),
+                color: const Color(0xFF1F1D36),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      list['name'] ?? 'Untitled List',
-                      style: GoogleFonts.openSans(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      list['description'] ?? 'No description',
-                      style: GoogleFonts.openSans(
-                        color: Colors.grey[400],
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
                     Row(
                       children: [
-                        Icon(
-                          Icons.movie_outlined,
-                          color: Colors.grey[400],
-                          size: 16,
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.grey[800],
+                          backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
+                              ? NetworkImage(avatarUrl)
+                              : null,
+                          child: (avatarUrl == null || avatarUrl.isEmpty)
+                              ? Text(
+                                  displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
+                                  style: GoogleFonts.openSans(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                  ),
+                                )
+                              : null,
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 12),
                         Text(
-                          '${list['item_count'] ?? 0} movies',
+                          displayName,
                           style: GoogleFonts.openSans(
-                            color: Colors.grey[400],
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Icon(
-                          Icons.calendar_today_outlined,
-                          color: Colors.grey[400],
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Created $formattedDate',
-                          style: GoogleFonts.openSans(
-                            color: Colors.grey[400],
-                            fontSize: 14,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-
-              // Movies Section
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                    const SizedBox(height: 16),
                     Text(
-                      'Movies',
+                      widget.list['name'] ?? 'Untitled List',
                       style: GoogleFonts.openSans(
                         color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Obx(() {
-                      if (controller.isLoading) {
-                        return const Center(
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE9A6A6)),
-                          ),
-                        );
-                      }
-
-                      if (controller.error != null) {
-                        return Center(
-                          child: Column(
-                            children: [
-                              Text(
-                                'Error loading movies',
-                                style: GoogleFonts.openSans(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              ElevatedButton(
-                                onPressed: controller.refreshList,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFE9A6A6),
-                                  foregroundColor: Colors.black,
-                                ),
-                                child: const Text('Try Again'),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      if (controller.movies.isEmpty) {
-                        return Center(
-                          child: Text(
-                            'No movies in this list yet',
-                            style: GoogleFonts.openSans(
-                              color: Colors.grey[400],
-                              fontSize: 16,
-                            ),
-                          ),
-                        );
-                      }
-
-                      return GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          childAspectRatio: 0.7,
-                          crossAxisSpacing: 8,
-                          mainAxisSpacing: 8,
-                        ),
-                        itemCount: controller.movies.length,
-                        itemBuilder: (context, index) {
-                          final movie = controller.movies[index];
-                          return MovieCard(movie: movie);
-                        },
-                      );
-                    }),
+                    const SizedBox(height: 8),
+                    Text(
+                      widget.list['description'] ?? 'No description',
+                      style: GoogleFonts.openSans(
+                        color: Colors.grey[400],
+                        fontSize: 15,
+                      ),
+                    ),
                   ],
                 ),
               ),
+              // MOVIE LIST
+              ...List.generate(sortedMovies.length, (index) {
+                final movie = sortedMovies[index];
+                return Column(
+                  children: [
+                    MovieListItem(
+                      rank: index + 1,
+                      movie: movie,
+                    ),
+                    if (index != sortedMovies.length - 1)
+                      Divider(color: Colors.grey[800], thickness: 1, height: 0),
+                  ],
+                );
+              }),
             ],
-          ),
-        ),
+          );
+        }),
       ),
+    );
+  }
+
+  int _compareMovies(Movie a, Movie b, String sortBy) {
+    final parts = sortBy.split('.');
+    final field = parts[0];
+    final order = parts[1];
+    int result = 0;
+    switch (field) {
+      case 'popularity':
+        result = ((a.voteCount ?? 0).compareTo(b.voteCount ?? 0));
+        break;
+      case 'release_date':
+        result = a.releaseDate.compareTo(b.releaseDate);
+        break;
+      case 'revenue':
+        result = 0; // Not available in Movie model
+        break;
+      case 'primary_release_date':
+        result = a.releaseDate.compareTo(b.releaseDate);
+        break;
+      case 'title':
+        result = a.title.toLowerCase().compareTo(b.title.toLowerCase());
+        break;
+      case 'original_title':
+        result = a.title.toLowerCase().compareTo(b.title.toLowerCase());
+        break;
+      case 'vote_average':
+        result = (a.voteAverage ?? 0).compareTo(b.voteAverage ?? 0);
+        break;
+      case 'vote_count':
+        result = (a.voteCount ?? 0).compareTo(b.voteCount ?? 0);
+        break;
+      default:
+        result = 0;
+    }
+    return order == 'desc' ? -result : result;
+  }
+}
+
+class _SortDialog extends StatelessWidget {
+  final String selected;
+  const _SortDialog({required this.selected});
+
+  @override
+  Widget build(BuildContext context) {
+    final options = [
+      {'label': 'Popularity ↑', 'value': 'popularity.asc'},
+      {'label': 'Popularity ↓', 'value': 'popularity.desc'},
+      {'label': 'Release Date ↑', 'value': 'release_date.asc'},
+      {'label': 'Release Date ↓', 'value': 'release_date.desc'},
+      {'label': 'Vote Average ↑', 'value': 'vote_average.asc'},
+      {'label': 'Vote Average ↓', 'value': 'vote_average.desc'},
+      {'label': 'Title ↑', 'value': 'title.asc'},
+      {'label': 'Title ↓', 'value': 'title.desc'},
+      {'label': 'Vote Count ↑', 'value': 'vote_count.asc'},
+      {'label': 'Vote Count ↓', 'value': 'vote_count.desc'},
+    ];
+    return SimpleDialog(
+      title: const Text('Sort by'),
+      children: options.map((opt) => RadioListTile<String>(
+        value: opt['value']!,
+        groupValue: selected,
+        title: Text(opt['label']!),
+        onChanged: (val) => Navigator.of(context).pop(val),
+      )).toList(),
     );
   }
 }
 
-class MovieCard extends StatelessWidget {
+class MovieListItem extends StatelessWidget {
+  final int rank;
   final Movie movie;
 
-  const MovieCard({
-    super.key,
-    required this.movie,
-  });
+  const MovieListItem({super.key, required this.rank, required this.movie});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // TODO: Navigate to movie details
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          color: const Color(0xFF3D3B54),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                child: CachedNetworkImage(
-                  imageUrl: movie.posterPath != null
-                      ? 'https://image.tmdb.org/t/p/w500${movie.posterPath}'
-                      : 'https://via.placeholder.com/500x750?text=No+Image',
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  placeholder: (context, url) => Container(
-                    color: Colors.grey[800],
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE9A6A6)),
-                      ),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: Colors.grey[800],
-                    child: const Icon(
-                      Icons.error_outline,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Rank
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: const Color(0xFF353542),
+              borderRadius: BorderRadius.circular(14),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    movie.title,
-                    style: GoogleFonts.openSans(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.star,
-                        color: Colors.amber,
-                        size: 12,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        movie.voteAverage?.toStringAsFixed(1) ?? 'N/A',
+            alignment: Alignment.center,
+            child: Text(
+              '$rank',
+              style: GoogleFonts.openSans(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Poster
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: Image.network(
+              movie.posterPath != null
+                  ? 'https://image.tmdb.org/t/p/w92${movie.posterPath}'
+                  : 'https://via.placeholder.com/92x138?text=No+Image',
+              width: 48,
+              height: 72,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        movie.title,
                         style: GoogleFonts.openSans(
-                          color: Colors.grey[400],
-                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      movie.releaseDate?.substring(0, 4) ?? '',
+                      style: GoogleFonts.openSans(color: Colors.grey[400], fontSize: 14),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    if (movie.voteAverage != null) ..._buildStarRating(movie.voteAverage!),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
+  }
+
+  List<Widget> _buildStarRating(double rating) {
+    // rating is 0-10, but userRating is 0-10 (from API), so convert to 0-5 stars
+    final double starRating = (rating / 2).clamp(0, 5);
+    final int fullStars = starRating.floor();
+    final bool hasHalfStar = (starRating - fullStars) >= 0.5;
+    final List<Widget> stars = [];
+    for (int i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars.add(Padding(
+          padding: const EdgeInsets.only(right: 2),
+          child: SvgPicture.asset(
+            'assets/icons/star.svg',
+            colorFilter: const ColorFilter.mode(Color(0xFFE9A6A6), BlendMode.srcIn),
+            width: 16,
+            height: 16,
+          ),
+        ));
+      } else if (i == fullStars && hasHalfStar) {
+        stars.add(Padding(
+          padding: const EdgeInsets.only(right: 2),
+          child: SvgPicture.asset(
+            'assets/icons/halfstar.svg',
+            colorFilter: const ColorFilter.mode(Color(0xFFE9A6A6), BlendMode.srcIn),
+            width: 16,
+            height: 16,
+          ),
+        ));
+      }
+      // Do not add empty/gray stars
+    }
+    return stars;
   }
 } 
