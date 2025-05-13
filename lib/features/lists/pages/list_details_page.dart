@@ -11,6 +11,7 @@ import 'package:letterboxd/features/authentication/controllers/auth_controller.d
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:letterboxd/core/widgets/star_rating.dart';
 import 'sort_list_page.dart';
+import 'package:letterboxd/features/movie/movie_detail_page.dart';
 
 class ListDetailsPage extends StatefulWidget {
   final Map<String, dynamic> list;
@@ -178,9 +179,18 @@ class _ListDetailsPageState extends State<ListDetailsPage> {
                 final movie = sortedMovies[index];
                 return Column(
                   children: [
-                    MovieListItem(
-                      rank: index + 1,
-                      movie: movie,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => MovieDetailPage(movieId: movie.id.toString()),
+                          ),
+                        );
+                      },
+                      child: MovieListItem(
+                        rank: index + 1,
+                        movie: movie,
+                      ),
                     ),
                     if (index != sortedMovies.length - 1)
                       Divider(color: Colors.grey[800], thickness: 1, height: 0),
