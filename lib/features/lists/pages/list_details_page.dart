@@ -10,6 +10,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:letterboxd/core/widgets/star_rating.dart';
+import 'sort_list_page.dart';
 
 class ListDetailsPage extends StatefulWidget {
   final Map<String, dynamic> list;
@@ -51,9 +52,10 @@ class _ListDetailsPageState extends State<ListDetailsPage> {
           IconButton(
             icon: const Icon(Icons.sort, color: Colors.white),
             onPressed: () async {
-              final selected = await showDialog<String>(
-                context: context,
-                builder: (context) => _SortDialog(selected: _sortBy),
+              final selected = await Navigator.of(context).push<String>(
+                MaterialPageRoute(
+                  builder: (context) => SortListPage(selected: _sortBy),
+                ),
               );
               if (selected != null && selected != _sortBy) {
                 setState(() {
@@ -198,23 +200,8 @@ class _ListDetailsPageState extends State<ListDetailsPage> {
     final order = parts[1];
     int result = 0;
     switch (field) {
-      case 'popularity':
-        result = ((a.voteCount ?? 0).compareTo(b.voteCount ?? 0));
-        break;
       case 'release_date':
         result = a.releaseDate.compareTo(b.releaseDate);
-        break;
-      case 'revenue':
-        result = 0; // Not available in Movie model
-        break;
-      case 'primary_release_date':
-        result = a.releaseDate.compareTo(b.releaseDate);
-        break;
-      case 'title':
-        result = a.title.toLowerCase().compareTo(b.title.toLowerCase());
-        break;
-      case 'original_title':
-        result = a.title.toLowerCase().compareTo(b.title.toLowerCase());
         break;
       case 'vote_average':
         result = (a.voteAverage ?? 0).compareTo(b.voteAverage ?? 0);
@@ -222,40 +209,16 @@ class _ListDetailsPageState extends State<ListDetailsPage> {
       case 'vote_count':
         result = (a.voteCount ?? 0).compareTo(b.voteCount ?? 0);
         break;
+      case 'title':
+        result = a.title.toLowerCase().compareTo(b.title.toLowerCase());
+        break;
+      case 'length':
+        result = (a.runtime ?? 0).compareTo(b.runtime ?? 0);
+        break;
       default:
         result = 0;
     }
     return order == 'desc' ? -result : result;
-  }
-}
-
-class _SortDialog extends StatelessWidget {
-  final String selected;
-  const _SortDialog({required this.selected});
-
-  @override
-  Widget build(BuildContext context) {
-    final options = [
-      {'label': 'Popularity ↑', 'value': 'popularity.asc'},
-      {'label': 'Popularity ↓', 'value': 'popularity.desc'},
-      {'label': 'Release Date ↑', 'value': 'release_date.asc'},
-      {'label': 'Release Date ↓', 'value': 'release_date.desc'},
-      {'label': 'Vote Average ↑', 'value': 'vote_average.asc'},
-      {'label': 'Vote Average ↓', 'value': 'vote_average.desc'},
-      {'label': 'Title ↑', 'value': 'title.asc'},
-      {'label': 'Title ↓', 'value': 'title.desc'},
-      {'label': 'Vote Count ↑', 'value': 'vote_count.asc'},
-      {'label': 'Vote Count ↓', 'value': 'vote_count.desc'},
-    ];
-    return SimpleDialog(
-      title: const Text('Sort by'),
-      children: options.map((opt) => RadioListTile<String>(
-        value: opt['value']!,
-        groupValue: selected,
-        title: Text(opt['label']!),
-        onChanged: (val) => Navigator.of(context).pop(val),
-      )).toList(),
-    );
   }
 }
 
