@@ -123,65 +123,70 @@ class _WatchlistPageState extends State<WatchlistPage> {
               final movie = watchlist[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: movie.posterUrl.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: movie.posterUrl,
-                            width: 100,
-                            height: 150,
-                            fit: BoxFit.cover,
-                            memCacheWidth: 200,
-                            memCacheHeight: 300,
-                            placeholder: (context, url) => _buildPlaceholder(),
-                            errorWidget: (context, url, error) => _buildPlaceholder(),
-                          )
-                        : _buildPlaceholder(),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            movie.title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (movie.releaseDate.isNotEmpty) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              movie.releaseDate.split('-')[0],
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                          if (movie.overview.isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              movie.overview,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ],
+                child: InkWell(
+                  onTap: () {
+                    Get.toNamed('/movie/${movie.id}');
+                  },
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: movie.posterUrl.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: movie.posterUrl,
+                              width: 100,
+                              height: 150,
+                              fit: BoxFit.cover,
+                              memCacheWidth: 200,
+                              memCacheHeight: 300,
+                              placeholder: (context, url) => _buildPlaceholder(),
+                              errorWidget: (context, url, error) => _buildPlaceholder(),
+                            )
+                          : _buildPlaceholder(),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              movie.title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (movie.releaseDate.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                movie.releaseDate.split('-')[0],
+                                style: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                            if (movie.overview.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                movie.overview,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
