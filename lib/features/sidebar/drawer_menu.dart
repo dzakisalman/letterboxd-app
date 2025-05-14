@@ -50,23 +50,25 @@ class DrawerMenu extends StatelessWidget {
                     backgroundImage: authController.currentUser?.profileImage != null
                       ? NetworkImage(authController.currentUser!.profileImage!)
                       : null,
-                    child: Obx(() {
-                      final user = authController.currentUser;
-                      if (user?.profileImage == null) {
-                        return Text(
-                          user?.name.isNotEmpty == true
-                            ? user!.name[0].toUpperCase()
-                            : 'G',
-                          style: GoogleFonts.openSans(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        );
-                      } else {
-                        return const SizedBox.shrink();
-                      }
-                    }),
+                    child: GetBuilder<AuthController>(
+                      builder: (controller) {
+                        final user = controller.currentUser;
+                        if (user?.profileImage == null) {
+                          return Text(
+                            user?.name.isNotEmpty == true
+                              ? user!.name[0].toUpperCase()
+                              : 'G',
+                            style: GoogleFonts.openSans(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          );
+                        } else {
+                          return const SizedBox.shrink();
+                        }
+                      },
+                    ),
                   ),
                   const SizedBox(width: 12),
                   // User Info
@@ -74,25 +76,31 @@ class DrawerMenu extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Obx(() {
-                          final user = authController.currentUser;
-                          return Text(
-                            user?.name ?? 'Guest',
-                            style: GoogleFonts.openSans(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              height: 1.2,
-                            ),
-                          );
-                        }),
-                        Text(
-                          '@${authController.currentUser?.username ?? ''}',
-                          style: GoogleFonts.openSans(
-                            color: Colors.grey[400],
-                            fontSize: 13,
-                            height: 1.2,
-                          ),
+                        GetBuilder<AuthController>(
+                          builder: (controller) {
+                            final user = controller.currentUser;
+                            return Text(
+                              user?.name ?? 'Guest',
+                              style: GoogleFonts.openSans(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                height: 1.2,
+                              ),
+                            );
+                          },
+                        ),
+                        GetBuilder<AuthController>(
+                          builder: (controller) {
+                            return Text(
+                              '@${controller.currentUser?.username ?? ''}',
+                              style: GoogleFonts.openSans(
+                                color: Colors.grey[400],
+                                fontSize: 13,
+                                height: 1.2,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -199,10 +207,10 @@ class DrawerMenu extends StatelessWidget {
               isSmall: true,
               onTap: () async {
                 await authController.logout();
+                Navigator.of(context).pop();
                 Get.offAllNamed(AppRoutes.login);
               },
             ),
-            const SizedBox(height: 8),
           ],
         ),
       ),
