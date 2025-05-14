@@ -6,9 +6,9 @@ import 'package:letterboxd/features/authentication/controllers/auth_controller.d
 class ProfileController extends GetxController {
   final authController = Get.find<AuthController>();
   
-  final RxList<Movie> favoriteMovies = <Movie>[].obs;
-  final RxList<Movie> recentlyWatched = <Movie>[].obs;
-  final RxBool isLoading = false.obs;
+  List<Movie> favoriteMovies = [];
+  List<Movie> recentlyWatched = [];
+  bool isLoading = false;
 
   @override
   void onInit() {
@@ -20,7 +20,8 @@ class ProfileController extends GetxController {
     if (!authController.isLoggedIn) return;
 
     try {
-      isLoading.value = true;
+      isLoading = true;
+      update();
       
       // Load data in parallel
       final results = await Future.wait([
@@ -28,8 +29,8 @@ class ProfileController extends GetxController {
         TMDBService.getRatedMovies(authController.sessionId!),
       ]);
 
-      favoriteMovies.value = results[0];
-      recentlyWatched.value = results[1];
+      favoriteMovies = results[0];
+      recentlyWatched = results[1];
     } catch (e) {
       Get.snackbar(
         'Error',
@@ -37,7 +38,8 @@ class ProfileController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
-      isLoading.value = false;
+      isLoading = false;
+      update();
     }
   }
 
@@ -54,7 +56,8 @@ class ProfileController extends GetxController {
 
       // Reload favorite movies
       final updatedFavorites = await TMDBService.getFavoriteMovies(authController.sessionId!);
-      favoriteMovies.value = updatedFavorites;
+      favoriteMovies = updatedFavorites;
+      update();
 
       Get.snackbar(
         'Success',
