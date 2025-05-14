@@ -6,8 +6,8 @@ import 'package:csv/csv.dart';
 import '../models/diary_entry.dart';
 
 class DiaryController extends GetxController {
-  final RxMap<String, List<DiaryEntry>> entriesByMonth = <String, List<DiaryEntry>>{}.obs;
-  final RxBool isLoading = false.obs;
+  Map<String, List<DiaryEntry>> entriesByMonth = <String, List<DiaryEntry>>{};
+  bool isLoading = false;
 
   @override
   void onInit() {
@@ -17,7 +17,8 @@ class DiaryController extends GetxController {
 
   Future<void> loadDiaryEntries() async {
     try {
-      isLoading.value = true;
+      isLoading = true;
+      update();
       
       // Read CSV file
       final String csvString = await rootBundle.loadString('assets/csv/diary.csv');
@@ -83,7 +84,7 @@ class DiaryController extends GetxController {
         grouped[monthKey]!.add(entry);
       }
       
-      entriesByMonth.value = grouped;
+      entriesByMonth = grouped;
     } catch (e, stackTrace) {
       print('Error loading diary entries: $e');
       print('Stack trace: $stackTrace');
@@ -95,7 +96,8 @@ class DiaryController extends GetxController {
         colorText: const Color(0xFF1F1D36),
       );
     } finally {
-      isLoading.value = false;
+      isLoading = false;
+      update();
     }
   }
 
@@ -107,7 +109,7 @@ class DiaryController extends GetxController {
         entriesByMonth[monthKey] = [];
       }
       entriesByMonth[monthKey]!.add(entry);
-      entriesByMonth.refresh();
+      update();
     } catch (e) {
       Get.snackbar(
         'Error',
