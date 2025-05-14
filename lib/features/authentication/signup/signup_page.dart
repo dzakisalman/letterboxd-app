@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
-import 'package:letterboxd/features/authentication/widgets/custom_text_field.dart';
 import 'package:letterboxd/routes/app_routes.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../widgets/custom_text_field.dart';
 
 class SignupPage extends StatelessWidget {
   SignupPage({super.key});
@@ -23,116 +23,118 @@ class SignupPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1F1D36),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/login.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
-            ),
-          ),
-          SafeArea(
-            child: SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top,
+      body: GetBuilder<AuthController>(
+        builder: (controller) {
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: Image.asset(
+                  'assets/images/login.png',
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
                 ),
-                child: IntrinsicHeight(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 170),
-                        SvgPicture.asset(
-                          'assets/images/letterboxd_logo.svg',
-                          height: 75,
-                        ),
-                        const SizedBox(height: 48),
-                        Text(
-                          'Sign Up',
-                          style: GoogleFonts.openSans(
-                            textStyle: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
+              ),
+              SafeArea(
+                child: SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top,
+                    ),
+                    child: IntrinsicHeight(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 170),
+                            SvgPicture.asset(
+                              'assets/images/letterboxd_logo.svg',
+                              height: 75,
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Create an account to continue.',
-                          style: GoogleFonts.openSans(
-                            textStyle: TextStyle(
-                              color: Colors.grey[400],
-                              fontSize: 14,
+                            const SizedBox(height: 48),
+                            Text(
+                              'Sign Up',
+                              style: GoogleFonts.openSans(
+                                textStyle: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        Form(
-                          key: _formKey,
-                          child: Column(
-                            children: [
-                              CustomTextField(
-                                controller: _usernameController,
-                                hintText: 'Username',
-                                prefixIconPath: 'assets/icons/username.svg',
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter a username';
-                                  }
-                                  if (value.length < 3) {
-                                      return 'Username must be at least 3 characters';
-                                  }
-                                  return null;
-                                },
+                            const SizedBox(height: 8),
+                            Text(
+                              'Create an account to continue.',
+                              style: GoogleFonts.openSans(
+                                textStyle: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: 14,
+                                ),
                               ),
-                              const SizedBox(height: 16),
-                              CustomTextField(
-                                controller: _emailController,
-                                hintText: 'Email',
-                                prefixIconPath: 'assets/icons/email.svg',
-                                keyboardType: TextInputType.emailAddress,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter an email address';
-                                  }
-                                  if (!_emailRegExp.hasMatch(value)) {
-                                      return 'Please enter a valid email address';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              CustomTextField(
-                                controller: _passwordController,
-                                hintText: 'Password',
-                                prefixIconPath: 'assets/icons/password.svg',
-                                obscureText: true,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter a password';
-                                  }
-                                  if (value.length < 6) {
-                                    return 'Password must be at least 6 characters';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 32),
-                              SizedBox(
-                                width: 200,
-                                child: Obx(() => ElevatedButton(
-                                      onPressed: _authController.isLoading
+                            ),
+                            const SizedBox(height: 32),
+                            Form(
+                              key: _formKey,
+                              child: Column(
+                                children: [
+                                  CustomTextField(
+                                    controller: _usernameController,
+                                    hintText: 'Username',
+                                    prefixIconPath: 'assets/icons/username.svg',
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter a username';
+                                      }
+                                      if (value.length < 3) {
+                                        return 'Username must be at least 3 characters';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                  CustomTextField(
+                                    controller: _emailController,
+                                    hintText: 'Email',
+                                    prefixIconPath: 'assets/icons/email.svg',
+                                    keyboardType: TextInputType.emailAddress,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter an email address';
+                                      }
+                                      if (!_emailRegExp.hasMatch(value)) {
+                                        return 'Please enter a valid email address';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                  CustomTextField(
+                                    controller: _passwordController,
+                                    hintText: 'Password',
+                                    prefixIconPath: 'assets/icons/password.svg',
+                                    obscureText: true,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter a password';
+                                      }
+                                      if (value.length < 6) {
+                                        return 'Password must be at least 6 characters';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 32),
+                                  SizedBox(
+                                    width: 200,
+                                    child: ElevatedButton(
+                                      onPressed: controller.isLoading
                                           ? null
                                           : () async {
                                               if (_formKey.currentState!.validate()) {
-                                                final success = await _authController.signup(
-                                                   _usernameController.text,
-                                                   _emailController.text,
-                                                   _passwordController.text,
+                                                final success = await controller.signup(
+                                                  _usernameController.text,
+                                                  _emailController.text,
+                                                  _passwordController.text,
                                                 );
                                                 if (success) {
                                                   Get.offAllNamed(AppRoutes.home);
@@ -148,7 +150,7 @@ class SignupPage extends StatelessWidget {
                                         ),
                                         minimumSize: const Size(double.infinity, 48),
                                       ),
-                                      child: _authController.isLoading
+                                      child: controller.isLoading
                                           ? const SizedBox(
                                               height: 20,
                                               width: 20,
@@ -166,55 +168,57 @@ class SignupPage extends StatelessWidget {
                                                 ),
                                               ),
                                             ),
-                                    )),
-                              ),
-                              const SizedBox(height: 24),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'Already have an account? ',
-                                    style: GoogleFonts.openSans(
-                                      textStyle: const TextStyle(
-                                        color: Color(0xFFE9A6A6),
-                                        fontSize: 14,
-                                      ),
                                     ),
                                   ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Get.back();
-                                    },
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.zero,
-                                      minimumSize: Size.zero,
-                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    child: Text(
-                                      'Login Page',
-                                      style: GoogleFonts.openSans(
-                                        textStyle: const TextStyle(
-                                          color: Color(0xFF9C4A8B),
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
+                                  const SizedBox(height: 24),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Already have an account? ',
+                                        style: GoogleFonts.openSans(
+                                          textStyle: const TextStyle(
+                                            color: Color(0xFFE9A6A6),
+                                            fontSize: 14,
+                                          ),
                                         ),
                                       ),
-                                    ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Get.back();
+                                        },
+                                        style: TextButton.styleFrom(
+                                          padding: EdgeInsets.zero,
+                                          minimumSize: Size.zero,
+                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        child: Text(
+                                          'Login Page',
+                                          style: GoogleFonts.openSans(
+                                            textStyle: const TextStyle(
+                                              color: Color(0xFF9C4A8B),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(height: 20),
+                          ],
                         ),
-                        const SizedBox(height: 20),
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
