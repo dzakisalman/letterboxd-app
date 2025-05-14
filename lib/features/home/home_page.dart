@@ -23,232 +23,234 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF1F1D36),
       drawer: const DrawerMenu(),
-      body: Obx(() {
-        if (homeController.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
+      body: GetBuilder<HomeController>(
+        builder: (controller) {
+          if (controller.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-        return SafeArea(
-          child: RefreshIndicator(
-            onRefresh: () async {
-              await homeController.refreshData();
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header Section
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                    child: Row(
-                      children: [
-                        Builder(
-                          builder: (context) => IconButton(
-                            icon: SvgPicture.asset(
-                              'assets/icons/sidebar.svg',
-                              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+          return SafeArea(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await controller.refreshData();
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header Section
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                      child: Row(
+                        children: [
+                          Builder(
+                            builder: (context) => IconButton(
+                              icon: SvgPicture.asset(
+                                'assets/icons/sidebar.svg',
+                                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                              ),
+                              onPressed: () {
+                                Scaffold.of(context).openDrawer();
+                              },
                             ),
-                            onPressed: () {
-                              Scaffold.of(context).openDrawer();
+                          ),
+                          const Spacer(),
+                          // IconButton(
+                          //   icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                          //   onPressed: () {
+                          //     // TODO: Implement notifications
+                          //   },
+                          // ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () {
+                              Get.toNamed(AppRoutes.profile);
                             },
+                            child: CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Colors.grey[800],
+                              backgroundImage: authController.currentUser?.profileImage != null
+                                ? NetworkImage(authController.currentUser!.profileImage!)
+                                : null,
+                              child: authController.currentUser?.profileImage == null
+                                ? Text(
+                                    (authController.currentUser?.name.isNotEmpty == true
+                                      ? authController.currentUser!.name[0].toUpperCase()
+                                      : 'G'),
+                                    style: const TextStyle(color: Colors.white),
+                                  )
+                                : null,
+                            ),
                           ),
-                        ),
-                        const Spacer(),
-                        // IconButton(
-                        //   icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-                        //   onPressed: () {
-                        //     // TODO: Implement notifications
-                        //   },
-                        // ),
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () {
-                            Get.toNamed(AppRoutes.profile);
-                          },
-                          child: CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Colors.grey[800],
-                            backgroundImage: authController.currentUser?.profileImage != null
-                              ? NetworkImage(authController.currentUser!.profileImage!)
-                              : null,
-                            child: authController.currentUser?.profileImage == null
-                              ? Text(
-                                  (authController.currentUser?.name.isNotEmpty == true
-                                    ? authController.currentUser!.name[0].toUpperCase()
-                                    : 'G'),
-                                  style: const TextStyle(color: Colors.white),
-                                )
-                              : null,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Welcome Text
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                text: 'Hello, ',
-                                style: GoogleFonts.openSans(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              TextSpan(
-                                text: '${authController.currentUser?.name ?? 'Guest'}!',
-                                style: GoogleFonts.openSans(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFFE9A6A6),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Review or track film you\'ve watched...',
-                          style: GoogleFonts.openSans(
-                            fontSize: 14,
-                            color: Colors.grey[400],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // Popular Films Section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Text(
-                      'Popular Films This Month',
-                      style: GoogleFonts.openSans(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 141,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
+
+                    // Welcome Text
+                    Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
-                      itemCount: homeController.popularMovies.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: _MovieCard(movie: homeController.popularMovies[index]),
-                        );
-                      },
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // // Popular Lists Section
-                  // Padding(
-                  //   padding: const EdgeInsets.symmetric(horizontal: 24),
-                  //   child: Text(
-                  //     'Popular Lists This Month',
-                  //     style: GoogleFonts.openSans(
-                  //       fontSize: 18,
-                  //       fontWeight: FontWeight.bold,
-                  //       color: Colors.white,
-                  //     ),
-                  //   ),
-                  // ),
-                  // const SizedBox(height: 16),
-                  // SizedBox(
-                  //   height: 200,
-                  //   child: Obx(() => ListView.builder(
-                  //     scrollDirection: Axis.horizontal,
-                  //     padding: const EdgeInsets.symmetric(horizontal: 24),
-                  //     itemCount: homeController.popularLists.length,
-                  //     itemBuilder: (context, index) {
-                  //       final list = homeController.popularLists[index];
-                  //       return _ListCard(
-                  //         title: list['title'],
-                  //         author: list['author'],
-                  //         posterPath: list['posterPath'],
-                  //       );
-                  //     },
-                  //   )),
-                  // ),
-
-                  const SizedBox(height: 32),
-
-                  // Recent Friends' Review Section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Text(
-                      'Recent Reviews',
-                      style: GoogleFonts.openSans(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'Hello, ',
+                                  style: GoogleFonts.openSans(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: '${authController.currentUser?.name ?? 'Guest'}!',
+                                  style: GoogleFonts.openSans(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFFE9A6A6),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Review or track film you\'ve watched...',
+                            style: GoogleFonts.openSans(
+                              fontSize: 14,
+                              color: Colors.grey[400],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Obx(() => ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: homeController.recentReviews.length,
-                      itemBuilder: (context, index) {
-                        final review = homeController.recentReviews[index];
-                        return ReviewCard(
-                          authorName: review['author'],
-                          avatarUrl: review['avatarUrl'],
-                          rating: review['rating'],
-                          content: review['content'],
-                          commentCount: 8,
-                          movieTitle: review['movieTitle'],
-                          movieYear: '2019',
-                          moviePosterUrl: review['posterPath'],
-                          onTap: () {
-                            final reviewObj = Review(
-                              id: review['movieId']?.toString() ?? 'unknown',
-                              userId: 'user_123', // TODO: Get actual user ID
-                              username: review['author'] ?? 'Anonymous',
-                              userAvatarUrl: review['avatarUrl'] ?? 'https://via.placeholder.com/150',
-                              movieId: review['movieId']?.toString() ?? 'unknown',
-                              movieTitle: review['movieTitle'] ?? 'Untitled Movie',
-                              movieYear: review['createdAt']?.substring(0, 4) ?? '2024',
-                              moviePosterUrl: review['posterPath'] ?? '',
-                              rating: (review['rating'] as num?)?.toDouble() ?? 0.0,
-                              content: review['content'] ?? 'No review content available',
-                              watchedDate: DateTime.tryParse(review['createdAt'] ?? '') ?? DateTime.now(),
-                              likes: 0,
-                              isLiked: false,
-                            );
-                            Get.toNamed(AppRoutes.review, arguments: reviewObj);
-                          },
-                        );
-                      },
-                    )),
-                  ),
-                  const SizedBox(height: 24),
-                ],
+
+                    const SizedBox(height: 32),
+
+                    // Popular Films Section
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        'Popular Films This Month',
+                        style: GoogleFonts.openSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      height: 141,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        itemCount: controller.popularMovies.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 16),
+                            child: _MovieCard(movie: controller.popularMovies[index]),
+                          );
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // // Popular Lists Section
+                    // Padding(
+                    //   padding: const EdgeInsets.symmetric(horizontal: 24),
+                    //   child: Text(
+                    //     'Popular Lists This Month',
+                    //     style: GoogleFonts.openSans(
+                    //       fontSize: 18,
+                    //       fontWeight: FontWeight.bold,
+                    //       color: Colors.white,
+                    //     ),
+                    //   ),
+                    // ),
+                    // const SizedBox(height: 16),
+                    // SizedBox(
+                    //   height: 200,
+                    //   child: Obx(() => ListView.builder(
+                    //     scrollDirection: Axis.horizontal,
+                    //     padding: const EdgeInsets.symmetric(horizontal: 24),
+                    //     itemCount: homeController.popularLists.length,
+                    //     itemBuilder: (context, index) {
+                    //       final list = homeController.popularLists[index];
+                    //       return _ListCard(
+                    //         title: list['title'],
+                    //         author: list['author'],
+                    //         posterPath: list['posterPath'],
+                    //       );
+                    //     },
+                    //   )),
+                    // ),
+
+                    const SizedBox(height: 32),
+
+                    // Recent Friends' Review Section
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        'Recent Reviews',
+                        style: GoogleFonts.openSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: controller.recentReviews.length,
+                        itemBuilder: (context, index) {
+                          final review = controller.recentReviews[index];
+                          return ReviewCard(
+                            authorName: review['author'],
+                            avatarUrl: review['avatarUrl'],
+                            rating: review['rating'],
+                            content: review['content'],
+                            commentCount: 8,
+                            movieTitle: review['movieTitle'],
+                            movieYear: '2019',
+                            moviePosterUrl: review['posterPath'],
+                            onTap: () {
+                              final reviewObj = Review(
+                                id: review['movieId']?.toString() ?? 'unknown',
+                                userId: 'user_123', // TODO: Get actual user ID
+                                username: review['author'] ?? 'Anonymous',
+                                userAvatarUrl: review['avatarUrl'] ?? 'https://via.placeholder.com/150',
+                                movieId: review['movieId']?.toString() ?? 'unknown',
+                                movieTitle: review['movieTitle'] ?? 'Untitled Movie',
+                                movieYear: review['createdAt']?.substring(0, 4) ?? '2024',
+                                moviePosterUrl: review['posterPath'] ?? '',
+                                rating: (review['rating'] as num?)?.toDouble() ?? 0.0,
+                                content: review['content'] ?? 'No review content available',
+                                watchedDate: DateTime.tryParse(review['createdAt'] ?? '') ?? DateTime.now(),
+                                likes: 0,
+                                isLiked: false,
+                              );
+                              Get.toNamed(AppRoutes.review, arguments: reviewObj);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      }),
+          );
+        },
+      ),
       bottomNavigationBar: const CustomBottomNav(currentIndex: 0),
     );
   }

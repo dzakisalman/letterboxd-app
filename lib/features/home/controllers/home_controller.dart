@@ -3,12 +3,12 @@ import 'package:letterboxd/core/models/movie.dart';
 import 'package:letterboxd/core/services/tmdb_service.dart';
 
 class HomeController extends GetxController {
-  final RxList<Movie> popularMovies = <Movie>[].obs;
-  final RxList<Movie> trendingMovies = <Movie>[].obs;
-  final RxList<Map<String, dynamic>> popularLists = <Map<String, dynamic>>[].obs;
-  final RxList<Map<String, dynamic>> recentReviews = <Map<String, dynamic>>[].obs;
-  final RxBool isLoading = false.obs;
-  final RxBool isLoadingMore = false.obs;
+  List<Movie> popularMovies = [];
+  List<Movie> trendingMovies = [];
+  List<Map<String, dynamic>> popularLists = [];
+  List<Map<String, dynamic>> recentReviews = [];
+  bool isLoading = false;
+  bool isLoadingMore = false;
 
   @override
   void onInit() {
@@ -18,7 +18,8 @@ class HomeController extends GetxController {
 
   Future<void> refreshData() async {
     try {
-      isLoading.value = true;
+      isLoading = true;
+      update();
       
       // Clear existing data
       popularMovies.clear();
@@ -41,13 +42,15 @@ class HomeController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
-      isLoading.value = false;
+      isLoading = false;
+      update();
     }
   }
 
   Future<void> _initializeData() async {
     try {
-      isLoading.value = true;
+      isLoading = true;
+      update();
       
       // Load all data in parallel
       await Future.wait([
@@ -64,7 +67,8 @@ class HomeController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
-      isLoading.value = false;
+      isLoading = false;
+      update();
     }
   }
 
@@ -84,8 +88,9 @@ class HomeController extends GetxController {
       print('[Home] Trending movies length: ${results[1].length}');
       print('[Home] First trending movie type: ${results[1].isNotEmpty ? results[1][0].runtimeType : 'empty'}');
       
-      popularMovies.value = results[0];
-      trendingMovies.value = results[1];
+      popularMovies = results[0];
+      trendingMovies = results[1];
+      update();
     } catch (e, stackTrace) {
       print('[Home] Error loading movies: $e');
       print('[Home] Stack trace: $stackTrace');
@@ -103,7 +108,7 @@ class HomeController extends GetxController {
       final movies = await TMDBService.getPopularCollections();
       print('[Home] Received ${movies.length} top rated movies');
       
-      popularLists.value = movies.map((movie) {
+      popularLists = movies.map((movie) {
         return {
           'title': movie['title'] ?? 'Untitled Movie',
           'author': 'Rating: ${(movie['vote_average'] as num).toStringAsFixed(1)}/10',
@@ -115,6 +120,7 @@ class HomeController extends GetxController {
       }).toList();
       
       print('[Home] Top rated movies loaded successfully');
+      update();
     } catch (e) {
       print('[Home] Failed to load top rated movies: ${e.toString()}');
       Get.snackbar(
@@ -129,7 +135,8 @@ class HomeController extends GetxController {
     if (popularMovies.isEmpty) return;
     
     try {
-      isLoadingMore.value = true;
+      isLoadingMore = true;
+      update();
       
       print('[Home] Loading reviews for ${popularMovies.length} movies');
       
@@ -188,7 +195,8 @@ class HomeController extends GetxController {
       }
       
       print('[Home] Total reviews processed: ${allReviews.length}');
-      recentReviews.value = allReviews;
+      recentReviews = allReviews;
+      update();
     } catch (e, stackTrace) {
       print('[Home] Error in loadReviews: $e');
       print('[Home] Stack trace: $stackTrace');
@@ -198,7 +206,8 @@ class HomeController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
-      isLoadingMore.value = false;
+      isLoadingMore = false;
+      update();
     }
   }
 
