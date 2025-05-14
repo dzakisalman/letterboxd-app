@@ -355,332 +355,326 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1F1D36),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
+      body: GetBuilder<MovieDetailController>(
+        builder: (controller) {
+          if (controller.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-        final movie = controller.movie.value;
-        if (movie == null) {
-          return const Center(child: Text('Movie not found'));
-        }
+          final movie = controller.movie;
+          if (movie == null) {
+            return const Center(child: Text('Movie not found'));
+          }
 
-        return Stack(
-          children: [
-            CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Stack(
-                    children: [
-                      // Banner image with gradient overlay
-                      SizedBox(
-                        height: 200,
-                        width: double.infinity,
-                        child: ShaderMask(
-                          shaderCallback: (rect) {
-                            return LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.black.withOpacity(0.1),
-                                Colors.black.withOpacity(0.7),
-                              ],
-                            ).createShader(rect);
-                          },
-                          blendMode: BlendMode.darken,
-                          child: movie.backdropUrl.isNotEmpty
-                              ? CachedNetworkImage(
-                                  imageUrl: movie.backdropUrl,
-                                  fit: BoxFit.cover,
-                                )
-                              : Container(color: Colors.grey[900]!),
-                        ),
-                      ),
-                      // Navy background with diagonal cut
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        height: 160,
-                        child: ClipPath(
-                          clipper: DiagonalClipper(),
-                          child: Container(
-                            color: const Color(0xFF1F1D36),
+          return Stack(
+            children: [
+              CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Stack(
+                      children: [
+                        // Banner image with gradient overlay
+                        SizedBox(
+                          height: 200,
+                          width: double.infinity,
+                          child: ShaderMask(
+                            shaderCallback: (rect) {
+                              return LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.black.withOpacity(0.1),
+                                  Colors.black.withOpacity(0.7),
+                                ],
+                              ).createShader(rect);
+                            },
+                            blendMode: BlendMode.darken,
+                            child: movie.backdropUrl.isNotEmpty
+                                ? CachedNetworkImage(
+                                    imageUrl: movie.backdropUrl,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Container(color: Colors.grey[900]!),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Movie Info Section
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Left side - Poster and Stats
-                            Column(
-                              children: [
-                                // Poster
-                                Container(
-                                  width: 120,
-                                  height: 180,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.3),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: CachedNetworkImage(
-                                      imageUrl: movie.posterUrl,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                // Stats Row
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Obx(() => _buildStat(
-                                      'assets/icons/eyes.svg', 
-                                      '40k',
-                                      isActive: controller.userRating.value > 0,
-                                      activeColor: Colors.green,
-                                    )),
-                                    const SizedBox(width: 16),
-                                    Obx(() => _buildStat(
-                                      'assets/icons/fav.svg', 
-                                      '30k',
-                                      isActive: controller.isFavorite.value,
-                                      activeColor: Colors.red,
-                                    )),
-                                    const SizedBox(width: 16),
-                                    Obx(() => _buildStat(
-                                      'assets/icons/listed.svg', 
-                                      '12k',
-                                      isActive: controller.isInList.value,
-                                      activeColor: Colors.blue,
-                                    )),
-                                  ],
-                                ),
-                              ],
+                        // Navy background with diagonal cut
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          height: 160,
+                          child: ClipPath(
+                            clipper: DiagonalClipper(),
+                            child: Container(
+                              color: const Color(0xFF1F1D36),
                             ),
-                            const SizedBox(width: 16),
-                            // Right side - Title and Details
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Movie Info Section
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Left side - Poster and Stats
+                              Column(
                                 children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Flexible(
-                                        child: Text(
-                                          movie.title,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                  // Poster
+                                  Container(
+                                    width: 120,
+                                    height: 180,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.3),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
                                         ),
+                                      ],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: CachedNetworkImage(
+                                        imageUrl: movie.posterUrl,
+                                        fit: BoxFit.cover,
                                       ),
-                                      const SizedBox(width: 8),
-                                      Padding(
-                                        padding: const EdgeInsets.only(bottom: 2),
-                                        child: Text(
-                                          movie.releaseDate.split('-')[0],
-                                          style: const TextStyle(
-                                            color: Colors.white70,
-                                            fontSize: 14,
-                                          ),
-                                        ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Stats Row
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      _buildStat(
+                                        'assets/icons/eyes.svg', 
+                                        '40k',
+                                        isActive: controller.userRating > 0,
+                                        activeColor: Colors.green,
+                                      ),
+                                      const SizedBox(width: 16),
+                                      _buildStat(
+                                        'assets/icons/fav.svg', 
+                                        '30k',
+                                        isActive: controller.isFavorite,
+                                        activeColor: Colors.red,
+                                      ),
+                                      const SizedBox(width: 16),
+                                      _buildStat(
+                                        'assets/icons/listed.svg', 
+                                        '12k',
+                                        isActive: controller.isInList,
+                                        activeColor: Colors.blue,
                                       ),
                                     ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    '${movie.runtime} mins',
-                                    style: TextStyle(
-                                      color: Colors.grey[400],
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Obx(() => Text(
-                                    'Directed by ${controller.movieDirector.value}',
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 12,
-                                    ),
-                                  )),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    movie.overview,
-                                    style: TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 12,
-                                      height: 1.5,
-                                    ),
-                                    textAlign: TextAlign.justify,
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 16),
+                              // Right side - Title and Details
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            movie.title,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Padding(
+                                          padding: const EdgeInsets.only(bottom: 2),
+                                          child: Text(
+                                            movie.releaseDate.split('-')[0],
+                                            style: const TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      '${movie.runtime} mins',
+                                      style: TextStyle(
+                                        color: Colors.grey[400],
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Directed by ${controller.movieDirector}',
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      movie.overview,
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 12,
+                                        height: 1.5,
+                                      ),
+                                      textAlign: TextAlign.justify,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      // Rest of the content
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildActionButtons(),
-                            const SizedBox(height: 24),
-                            MovieTabWidget(
-                              cast: controller.cast,
-                              crew: controller.crew,
-                              movie: movie,
-                            ),
-                            const SizedBox(height: 32),
-                            // All Reviews Section
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'All Reviews',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    // TODO: Navigate to all reviews page
-                                  },
-                                  child: Text(
-                                    'See All',
+                        const SizedBox(height: 24),
+                        // Rest of the content
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildActionButtons(),
+                              const SizedBox(height: 24),
+                              MovieTabWidget(
+                                cast: controller.cast,
+                                crew: controller.crew,
+                                movie: movie,
+                              ),
+                              const SizedBox(height: 32),
+                              // All Reviews Section
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'All Reviews',
                                     style: TextStyle(
-                                      fontSize: 14,
-                                      color: const Color(0xFF9C4FD6),
-                                      fontWeight: FontWeight.w500,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            // Reviews List
-                            Obx(() {
-                              if (controller.reviews.isEmpty) {
-                                return Center(
-                                  child: Text(
-                                    'No reviews yet',
-                                    style: TextStyle(
-                                      color: Colors.grey[400],
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                );
-                              }
-
-                              return Column(
-                                children: controller.reviews.take(3).map((review) {
-                                  final authorDetails = review['author_details'] ?? {};
-                                  final avatarPath = authorDetails['avatar_path']?.toString();
-                                  
-                                  print('[MovieDetail] Raw review data: ${review.toString()}');
-                                  print('[MovieDetail] Raw author details: ${authorDetails.toString()}');
-                                  print('[MovieDetail] Original avatar_path: $avatarPath');
-                                  
-                                  String? avatarUrl;
-                                  if (avatarPath != null && avatarPath.isNotEmpty) {
-                                    if (avatarPath.startsWith('/http') || avatarPath.startsWith('http')) {
-                                      avatarUrl = avatarPath.startsWith('/') ? avatarPath.substring(1) : avatarPath;
-                                      print('[MovieDetail] Using direct URL avatar: $avatarUrl');
-                                    } else {
-                                      avatarUrl = 'https://image.tmdb.org/t/p/w185$avatarPath';
-                                      print('[MovieDetail] Using TMDB path avatar: $avatarUrl');
-                                    }
-                                  } else {
-                                    avatarUrl = 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(review['author'] ?? 'Anonymous')}&background=random';
-                                    print('[MovieDetail] Using generated avatar: $avatarUrl');
-                                  }
-                                  
-                                  print('[MovieDetail] Final avatar URL: $avatarUrl');
-                                  
-                                  return ReviewCard(
-                                    authorName: review['author'] ?? 'Anonymous',
-                                    avatarUrl: avatarUrl,
-                                    rating: (authorDetails['rating'] ?? 0.0) / 2,
-                                    content: review['content'] ?? 'No content',
-                                    commentCount: 0,
-                                    movieTitle: movie.title,
-                                    movieYear: movie.releaseDate.split('-')[0],
-                                    moviePosterUrl: movie.posterUrl,
-                                    isDetailPage: true,
-                                    onTap: () {
-                                      final reviewObj = Review(
-                                        id: review['id'].toString(),
-                                        userId: authorDetails['id']?.toString() ?? 'unknown',
-                                        username: review['author'] ?? 'Anonymous',
-                                        userAvatarUrl: avatarPath ?? '',  // Use original avatar_path instead of generated URL
-                                        movieId: movie.id.toString(),
-                                        movieTitle: movie.title,
-                                        movieYear: movie.releaseDate.split('-')[0],
-                                        moviePosterUrl: movie.posterUrl,
-                                        rating: (authorDetails['rating'] ?? 0.0) / 2,
-                                        content: review['content'] ?? 'No content',
-                                        watchedDate: DateTime.parse(review['created_at'] ?? DateTime.now().toIso8601String()),
-                                        likes: 0,
-                                        isLiked: false,
-                                      );
-                                      print('[MovieDetail] Created Review object with avatar path: ${reviewObj.userAvatarUrl}');
-                                      Get.toNamed(AppRoutes.review, arguments: reviewObj);
+                                  TextButton(
+                                    onPressed: () {
+                                      // TODO: Navigate to all reviews page
                                     },
-                                  );
-                                }).toList(),
-                              );
-                            }),
-                          ],
+                                    child: Text(
+                                      'See All',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: const Color(0xFF9C4FD6),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              // Reviews List
+                              _buildReviewsList(controller.reviews, movie),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              // Back Button
+              Positioned(
+                top: 40,
+                left: 16,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black45,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Get.back(),
                   ),
                 ),
-              ],
-            ),
-            // Back Button
-            Positioned(
-              top: 40,
-              left: 16,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black45,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => Get.back(),
-                ),
               ),
-            ),
-          ],
+            ],
+          );
+        },
+      ),
+    );
+  }
+  
+  Widget _buildReviewsList(List<dynamic> reviews, Movie movie) {
+    if (reviews.isEmpty) {
+      return Center(
+        child: Text(
+          'No reviews yet',
+          style: TextStyle(
+            color: Colors.grey[400],
+            fontSize: 14,
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: reviews.take(3).map((review) {
+        final authorDetails = review['author_details'] ?? {};
+        final avatarPath = authorDetails['avatar_path']?.toString();
+        
+        String? avatarUrl;
+        if (avatarPath != null && avatarPath.isNotEmpty) {
+          if (avatarPath.startsWith('/http') || avatarPath.startsWith('http')) {
+            avatarUrl = avatarPath.startsWith('/') ? avatarPath.substring(1) : avatarPath;
+          } else {
+            avatarUrl = 'https://image.tmdb.org/t/p/w185$avatarPath';
+          }
+        } else {
+          avatarUrl = 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(review['author'] ?? 'Anonymous')}&background=random';
+        }
+        
+        return ReviewCard(
+          authorName: review['author'] ?? 'Anonymous',
+          avatarUrl: avatarUrl,
+          rating: (authorDetails['rating'] ?? 0.0) / 2,
+          content: review['content'] ?? 'No content',
+          commentCount: 0,
+          movieTitle: movie.title,
+          movieYear: movie.releaseDate.split('-')[0],
+          moviePosterUrl: movie.posterUrl,
+          isDetailPage: true,
+          onTap: () {
+            final reviewObj = Review(
+              id: review['id'].toString(),
+              userId: authorDetails['id']?.toString() ?? 'unknown',
+              username: review['author'] ?? 'Anonymous',
+              userAvatarUrl: avatarPath ?? '',
+              movieId: movie.id.toString(),
+              movieTitle: movie.title,
+              movieYear: movie.releaseDate.split('-')[0],
+              moviePosterUrl: movie.posterUrl,
+              rating: (authorDetails['rating'] ?? 0.0) / 2,
+              content: review['content'] ?? 'No content',
+              watchedDate: DateTime.parse(review['created_at'] ?? DateTime.now().toIso8601String()),
+              likes: 0,
+              isLiked: false,
+            );
+            Get.toNamed(AppRoutes.review, arguments: reviewObj);
+          },
         );
-      }),
+      }).toList(),
     );
   }
 
@@ -717,63 +711,56 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Obx(() {
-              if (controller.userRating.value > 0) {
-                final rating = controller.userRating.value;
-                final fullStars = rating.floor();
-                final hasHalfStar = rating - fullStars >= 0.5;
-                
-                return GestureDetector(
-                  onTap: controller.navigateToReviewForm,
-                  child: Container(
-                    width: MediaQuery.of(context).size.width * 0.35,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE9A6A6),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ...List.generate(fullStars, (index) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 1),
-                            child: SvgPicture.asset(
-                              'assets/icons/star.svg',
-                              colorFilter: const ColorFilter.mode(
-                                Color(0xFF1F1D36),
-                                BlendMode.srcIn,
-                              ),
-                              width: 14,
-                              height: 14,
-                            ),
-                          );
-                        }),
-                        if (hasHalfStar)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 1),
-                            child: SvgPicture.asset(
-                              'assets/icons/halfstar.svg',
-                              colorFilter: const ColorFilter.mode(
-                                Color(0xFF1F1D36),
-                                BlendMode.srcIn,
-                              ),
-                              width: 14,
-                              height: 14,
-                            ),
-                          ),
-                      ],
-                    ),
+            if (controller.userRating > 0)
+              GestureDetector(
+                onTap: controller.navigateToReviewForm,
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.35,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE9A6A6),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                );
-              } else {
-                return _buildActionButton(
-                  'Rate or Review',
-                  onPressed: controller.navigateToReviewForm,
-                  svgPath: 'assets/icons/queue.svg',
-                );
-              }
-            }),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ...List.generate(controller.userRating.floor(), (index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 1),
+                          child: SvgPicture.asset(
+                            'assets/icons/star.svg',
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xFF1F1D36),
+                              BlendMode.srcIn,
+                            ),
+                            width: 14,
+                            height: 14,
+                          ),
+                        );
+                      }),
+                      if (controller.userRating - controller.userRating.floor() >= 0.5)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 1),
+                          child: SvgPicture.asset(
+                            'assets/icons/halfstar.svg',
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xFF1F1D36),
+                              BlendMode.srcIn,
+                            ),
+                            width: 14,
+                            height: 14,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              _buildActionButton(
+                'Rate or Review',
+                onPressed: controller.navigateToReviewForm,
+                svgPath: 'assets/icons/queue.svg',
+              ),
             const SizedBox(height: 8),
             _buildActionButton(
               'Add to Lists',
@@ -781,11 +768,11 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
               svgPath: 'assets/icons/lists.svg',
             ),
             const SizedBox(height: 8),
-            Obx(() => _buildActionButton(
-              controller.isInWatchlist.value ? 'Remove from Watchlist' : 'Add to Watchlist',
+            _buildActionButton(
+              controller.isInWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist',
               onPressed: controller.toggleWatchlist,
               svgPath: 'assets/icons/watchlists.svg',
-            )),
+            ),
           ],
         ),
         const SizedBox(width: 16),
@@ -852,7 +839,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   }
 
   Widget _buildRatingsSection() {
-    final movie = controller.movie.value!;
+    final movie = controller.movie!;
     final tmdbRating = movie.voteAverage != null ? (movie.voteAverage! / 2).toStringAsFixed(1) : 'N/A';
     
     return Column(

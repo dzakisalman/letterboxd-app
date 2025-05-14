@@ -6,55 +6,57 @@ import 'package:letterboxd/features/authentication/controllers/auth_controller.d
 import 'package:letterboxd/core/services/api_service.dart';
 
 class MovieDetailController extends GetxController {
-  final RxBool isLoading = true.obs;
-  final Rx<Movie?> movie = Rx<Movie?>(null);
-  final RxList<Map<String, dynamic>> cast = <Map<String, dynamic>>[].obs;
-  final RxList<Map<String, dynamic>> crew = <Map<String, dynamic>>[].obs;
-  final RxList<Map<String, dynamic>> reviews = <Map<String, dynamic>>[].obs;
-  final RxList<Movie> similarMovies = <Movie>[].obs;
-  final RxList<Movie> recommendedMovies = <Movie>[].obs;
-  final RxBool isInWatchlist = false.obs;
-  final RxDouble userRating = 0.0.obs;
-  final RxString movieDirector = ''.obs;
-  final RxBool isWatched = false.obs;
-  final RxBool isFavorite = false.obs;
-  final RxBool isInList = false.obs;
+  bool isLoading = true;
+  Movie? movie;
+  List<Map<String, dynamic>> cast = [];
+  List<Map<String, dynamic>> crew = [];
+  List<Map<String, dynamic>> reviews = [];
+  List<Movie> similarMovies = [];
+  List<Movie> recommendedMovies = [];
+  bool isInWatchlist = false;
+  double userRating = 0.0;
+  String movieDirector = '';
+  bool isWatched = false;
+  bool isFavorite = false;
+  bool isInList = false;
 
   Future<void> loadMovieDetails(String movieId) async {
     try {
-      isLoading.value = true;
+      isLoading = true;
+      update();
+      
       final movieIdInt = int.parse(movieId);
       
       // Load movie details
       final movieData = await TMDBService.getMovieDetails(movieIdInt);
-      movie.value = movieData;
+      movie = movieData;
 
       // Load credits
       final creditsData = await TMDBService.getMovieCredits(movieIdInt);
       final castData = creditsData['cast'] as List;
       final crewData = creditsData['crew'] as List;
       
-      cast.value = castData.map((item) => item as Map<String, dynamic>).toList();
-      crew.value = crewData.map((item) => item as Map<String, dynamic>).toList();
+      cast = castData.map((item) => item as Map<String, dynamic>).toList();
+      crew = crewData.map((item) => item as Map<String, dynamic>).toList();
 
       // Find director
       final director = crew.firstWhere(
         (person) => person['job'] == 'Director',
         orElse: () => {'name': 'Unknown'},
       );
-      movieDirector.value = director['name'];
+      movieDirector = director['name'];
 
       // Load reviews
       final reviewsData = await TMDBService.getMovieReviews(movieIdInt);
-      reviews.value = reviewsData;
+      reviews = reviewsData;
 
       // Load similar movies
       final similarData = await TMDBService.getSimilarMovies(movieIdInt);
-      similarMovies.value = similarData;
+      similarMovies = similarData;
 
       // Load recommended movies
       final recommendedData = await TMDBService.getRecommendedMovies(movieIdInt);
-      recommendedMovies.value = recommendedData;
+      recommendedMovies = recommendedData;
 
       // Check movie status
       await checkMovieStatus(movieIdInt);
@@ -66,7 +68,8 @@ class MovieDetailController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
-      isLoading.value = false;
+      isLoading = false;
+      update();
     }
   }
 
@@ -76,10 +79,11 @@ class MovieDetailController extends GetxController {
       
       // Check if movie is rated
       final accountStates = await TMDBService.getAccountStates(movieId);
-      isWatched.value = accountStates['rated'] != null; // Only show watched for rated movies
-      isFavorite.value = accountStates['favorite'] == true;
-      isInList.value = accountStates['watchlist'] == true;
-      userRating.value = accountStates['rated'] != null ? (accountStates['rated']['value'] as num).toDouble() / 2 : 0.0;
+      isWatched = accountStates['rated'] != null; // Only show watched for rated movies
+      isFavorite = accountStates['favorite'] == true;
+      isInList = accountStates['watchlist'] == true;
+      userRating = accountStates['rated'] != null ? (accountStates['rated']['value'] as num).toDouble() / 2 : 0.0;
+      update();
     } catch (e) {
       print('Error checking movie status: $e');
     }
@@ -87,8 +91,8 @@ class MovieDetailController extends GetxController {
 
   void navigateToReviewForm() {
     final authController = Get.find<AuthController>();
-    if (authController.currentUser != null && movie.value != null) {
-      final movieData = movie.value!;
+    if (authController.currentUser != null && movie != null) {
+      final movieData = movie!;
       final posterUrl = movieData.posterPath != null 
           ? '${ApiService.imageBaseUrl}/w500${movieData.posterPath}'
           : 'https://via.placeholder.com/500x750?text=No+Poster';
@@ -99,8 +103,8 @@ class MovieDetailController extends GetxController {
         movieData.releaseDate.substring(0, 4),
         posterUrl,
       ), arguments: {
-        'existingRating': userRating.value,
-        'isFavorite': isFavorite.value,
+        'existingRating': userRating,
+        'isFavorite': isFavorite,
       });
     } else {
       Get.snackbar(
@@ -113,7 +117,7 @@ class MovieDetailController extends GetxController {
 
   Future<void> toggleWatchlist() async {
     try {
-      if (movie.value == null) return;
+      if (movie == null) return;
 
       final authController = Get.find<AuthController>();
       if (!authController.isLoggedIn) {
@@ -127,16 +131,16 @@ class MovieDetailController extends GetxController {
 
       final accountDetails = await TMDBService.getAccountDetails(authController.sessionId!);
       final accountId = accountDetails['id'];
-      final movieId = movie.value!.id;
+      final movieId = movie!.id;
 
-      if (isInWatchlist.value) {
+      if (isInWatchlist) {
         final response = await TMDBService.markAsWatchlist(
           authController.sessionId!,
           movieId,
           false,
         );
         if (response) {
-          isInWatchlist.value = false;
+          isInWatchlist = false;
           // Refresh movie status after removing from watchlist
           await checkMovieStatus(movieId);
           Get.snackbar(
@@ -152,7 +156,7 @@ class MovieDetailController extends GetxController {
           true,
         );
         if (response) {
-          isInWatchlist.value = true;
+          isInWatchlist = true;
           // Refresh movie status after adding to watchlist
           await checkMovieStatus(movieId);
           Get.snackbar(
@@ -162,6 +166,7 @@ class MovieDetailController extends GetxController {
           );
         }
       }
+      update();
     } catch (e) {
       print('[MovieDetail] Error toggling watchlist: $e');
       Get.snackbar(
@@ -174,18 +179,19 @@ class MovieDetailController extends GetxController {
 
   Future<void> rateMovie(double rating) async {
     try {
-      if (movie.value == null) return;
+      if (movie == null) return;
 
-      final success = await TMDBService.rateMovie(movie.value!.id, rating * 2); // Convert 5-star to 10-point scale
+      final success = await TMDBService.rateMovie(movie!.id, rating * 2); // Convert 5-star to 10-point scale
       if (success) {
-        userRating.value = rating;
+        userRating = rating;
         // Refresh movie status after rating
-        await checkMovieStatus(movie.value!.id);
+        await checkMovieStatus(movie!.id);
         Get.snackbar(
           'Success',
           'Rating submitted',
           snackPosition: SnackPosition.BOTTOM,
         );
+        update();
       }
     } catch (e) {
       Get.snackbar(
@@ -198,23 +204,24 @@ class MovieDetailController extends GetxController {
 
   Future<void> deleteRating() async {
     try {
-      if (movie.value == null) return;
+      if (movie == null) return;
 
-      final success = await TMDBService.deleteRating(movie.value!.id);
+      final success = await TMDBService.deleteRating(movie!.id);
       if (success) {
-        userRating.value = 0;
+        userRating = 0.0;
         // Refresh movie status after deleting rating
-        await checkMovieStatus(movie.value!.id);
+        await checkMovieStatus(movie!.id);
         Get.snackbar(
           'Success',
-          'Rating removed',
+          'Rating deleted',
           snackPosition: SnackPosition.BOTTOM,
         );
+        update();
       }
     } catch (e) {
       Get.snackbar(
         'Error',
-        'Failed to remove rating: ${e.toString()}',
+        'Failed to delete rating: ${e.toString()}',
         snackPosition: SnackPosition.BOTTOM,
       );
     }
@@ -222,14 +229,14 @@ class MovieDetailController extends GetxController {
 
   Future<void> toggleFavorite() async {
     try {
-      if (movie.value == null) return;
+      if (movie == null) return;
 
-      final movieId = movie.value!.id;
+      final movieId = movie!.id;
 
-      if (isFavorite.value) {
+      if (isFavorite) {
         final success = await TMDBService.removeFromFavorites(movieId);
         if (success) {
-          isFavorite.value = false;
+          isFavorite = false;
           // Refresh movie status after removing from favorites
           await checkMovieStatus(movieId);
           Get.snackbar(
@@ -241,7 +248,7 @@ class MovieDetailController extends GetxController {
       } else {
         final success = await TMDBService.addToFavorites(movieId);
         if (success) {
-          isFavorite.value = true;
+          isFavorite = true;
           // Refresh movie status after adding to favorites
           await checkMovieStatus(movieId);
           Get.snackbar(
