@@ -58,141 +58,143 @@ class _WatchlistPageState extends State<WatchlistPage> {
           ),
         ],
       ),
-      body: Obx(() {
-        if (_watchlistController.isLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
+      body: GetBuilder<WatchlistController>(
+        builder: (controller) {
+          if (controller.isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
 
-        final watchlist = _watchlistController.watchlist;
-        
-        if (watchlist.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.bookmark_border,
-                  size: 64,
-                  color: Colors.grey[400],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Your watchlist is empty',
-                  style: GoogleFonts.openSans(
+          final watchlist = controller.watchlist;
+          
+          if (watchlist.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.bookmark_border,
+                    size: 64,
                     color: Colors.grey[400],
-                    fontSize: 16,
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Add movies you want to watch',
-                  style: GoogleFonts.openSans(
-                    color: Colors.grey[600],
-                    fontSize: 14,
+                  const SizedBox(height: 16),
+                  Text(
+                    'Your watchlist is empty',
+                    style: GoogleFonts.openSans(
+                      color: Colors.grey[400],
+                      fontSize: 16,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          );
-        }
+                  const SizedBox(height: 8),
+                  Text(
+                    'Add movies you want to watch',
+                    style: GoogleFonts.openSans(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
 
-        if (_isGridView) {
-          return GridView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.625,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            itemCount: watchlist.length,
-            itemBuilder: (context, index) {
-              final movie = watchlist[index];
-              return MovieCard(
-                movie: movie,
-              );
-            },
-          );
-        } else {
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: watchlist.length,
-            itemBuilder: (context, index) {
-              final movie = watchlist[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: InkWell(
-                  onTap: () {
-                    Get.toNamed('/movie/${movie.id}');
-                  },
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: movie.posterUrl.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: movie.posterUrl,
-                              width: 100,
-                              height: 150,
-                              fit: BoxFit.cover,
-                              memCacheWidth: 200,
-                              memCacheHeight: 300,
-                              placeholder: (context, url) => _buildPlaceholder(),
-                              errorWidget: (context, url, error) => _buildPlaceholder(),
-                            )
-                          : _buildPlaceholder(),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              movie.title,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            if (movie.releaseDate.isNotEmpty) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                movie.releaseDate.split('-')[0],
-                                style: TextStyle(
-                                  color: Colors.grey[400],
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                            if (movie.overview.isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              Text(
-                                movie.overview,
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Colors.grey[400],
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ],
+          if (_isGridView) {
+            return GridView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.625,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+              ),
+              itemCount: watchlist.length,
+              itemBuilder: (context, index) {
+                final movie = watchlist[index];
+                return MovieCard(
+                  movie: movie,
+                );
+              },
+            );
+          } else {
+            return ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: watchlist.length,
+              itemBuilder: (context, index) {
+                final movie = watchlist[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: InkWell(
+                    onTap: () {
+                      Get.toNamed('/movie/${movie.id}');
+                    },
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: movie.posterUrl.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: movie.posterUrl,
+                                width: 100,
+                                height: 150,
+                                fit: BoxFit.cover,
+                                memCacheWidth: 200,
+                                memCacheHeight: 300,
+                                placeholder: (context, url) => _buildPlaceholder(),
+                                errorWidget: (context, url, error) => _buildPlaceholder(),
+                              )
+                            : _buildPlaceholder(),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                movie.title,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (movie.releaseDate.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  movie.releaseDate.split('-')[0],
+                                  style: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                              if (movie.overview.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  movie.overview,
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
-          );
-        }
-      }),
+                );
+              },
+            );
+          }
+        },
+      ),
     );
   }
 

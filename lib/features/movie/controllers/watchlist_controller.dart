@@ -5,11 +5,11 @@ import 'package:letterboxd/core/services/tmdb_service.dart';
 
 class WatchlistController extends GetxController {
   final AuthController _authController = Get.find<AuthController>();
-  final RxList<Movie> _watchlist = <Movie>[].obs;
-  final RxBool _isLoading = false.obs;
+  List<Movie> _watchlist = [];
+  bool _isLoading = false;
 
   List<Movie> get watchlist => _watchlist;
-  bool get isLoading => _isLoading.value;
+  bool get isLoading => _isLoading;
 
   @override
   void onInit() {
@@ -20,10 +20,12 @@ class WatchlistController extends GetxController {
   Future<void> refreshWatchlist() async {
     if (!_authController.isLoggedIn) return;
 
-    _isLoading.value = true;
+    _isLoading = true;
+    update();
+    
     try {
       final movies = await TMDBService.getWatchlist(_authController.sessionId!);
-      _watchlist.value = movies;
+      _watchlist = movies;
     } catch (e) {
       Get.snackbar(
         'Error',
@@ -31,7 +33,8 @@ class WatchlistController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
-      _isLoading.value = false;
+      _isLoading = false;
+      update();
     }
   }
 
@@ -58,6 +61,7 @@ class WatchlistController extends GetxController {
 
       if (success) {
         _watchlist.add(movie);
+        update();
         Get.snackbar(
           'Success',
           'Added to watchlist',
@@ -96,6 +100,7 @@ class WatchlistController extends GetxController {
 
       if (success) {
         _watchlist.removeWhere((movie) => movie.id == movieId);
+        update();
         Get.snackbar(
           'Success',
           'Removed from watchlist',
