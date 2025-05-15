@@ -127,24 +127,33 @@ class ProfilePage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Expanded(
-                          child: _buildStatItem(
-                            '${controller.recentlyWatched.length}',
-                            'Total Films',
-                            Color(0xFFE9A6A6)!,
+                          child: GestureDetector(
+                            onTap: () => Get.toNamed(AppRoutes.films),
+                            child: _buildStatItem(
+                              '${controller.recentlyWatched.length}',
+                              'Total Films',
+                              Color(0xFFE9A6A6)!,
+                            ),
                           ),
                         ),
                         Expanded(
-                          child: _buildStatItem(
-                            '${controller.recentlyWatched.length}',
-                            'Film This Year',
-                            Color(0xFF9C4A8B)!,
+                          child: GestureDetector(
+                            onTap: () => Get.toNamed(AppRoutes.films),
+                            child: _buildStatItem(
+                              '${controller.recentlyWatched.length}',
+                              'Film This Year',
+                              Color(0xFF9C4A8B)!,
+                            ),
                           ),
                         ),
                         Expanded(
-                          child: _buildStatItem(
-                            '${controller.listsCount}',
-                            'Lists',
-                            Color(0xFFE9A6A6)!,
+                          child: GestureDetector(
+                            onTap: () => Get.toNamed(AppRoutes.lists),
+                            child: _buildStatItem(
+                              '${controller.listsCount}',
+                              'Lists',
+                              Color(0xFFE9A6A6)!,
+                            ),
                           ),
                         ),
                         Expanded(
@@ -229,7 +238,7 @@ class ProfilePage extends StatelessWidget {
                               ),
                             ),
                             TextButton(
-                              onPressed: () {},
+                              onPressed: () => Get.toNamed(AppRoutes.films),
                               child: Text(
                                 'See All',
                                 style: GoogleFonts.openSans(
