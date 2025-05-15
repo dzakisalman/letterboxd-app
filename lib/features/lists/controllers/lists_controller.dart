@@ -3,13 +3,13 @@ import 'package:letterboxd/core/services/tmdb_service.dart';
 import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
 
 class ListsController extends GetxController {
-  final _lists = <Map<String, dynamic>>[].obs;
-  final _isLoading = false.obs;
-  final _error = RxnString();
+  List<Map<String, dynamic>> _lists = [];
+  bool _isLoading = false;
+  String? _error;
 
   List<Map<String, dynamic>> get lists => _lists;
-  bool get isLoading => _isLoading.value;
-  String? get error => _error.value;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
   @override
   void onInit() {
@@ -19,8 +19,9 @@ class ListsController extends GetxController {
 
   Future<void> fetchLists() async {
     try {
-      _isLoading.value = true;
-      _error.value = null;
+      _isLoading = true;
+      _error = null;
+      update();
 
       final authController = Get.find<AuthController>();
       final sessionId = authController.sessionId;
@@ -30,12 +31,13 @@ class ListsController extends GetxController {
       }
 
       final lists = await TMDBService.getLists(sessionId);
-      _lists.value = lists;
+      _lists = lists;
     } catch (e) {
       print('[ListsController] Error fetching lists: $e');
-      _error.value = e.toString();
+      _error = e.toString();
     } finally {
-      _isLoading.value = false;
+      _isLoading = false;
+      update();
     }
   }
 
