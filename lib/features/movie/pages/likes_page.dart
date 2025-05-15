@@ -63,170 +63,172 @@ class _LikesPageState extends State<LikesPage> {
           ),
         ],
       ),
-      body: Obx(() {
-        if (_likesController.isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(
-              color: Color(0xFFE9A6A6),
-            ),
-          );
-        }
+      body: GetBuilder<LikesController>(
+        builder: (controller) {
+          if (controller.isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFFE9A6A6),
+              ),
+            );
+          }
 
-        final likedMovies = _likesController.likedMovies;
-        
-        if (likedMovies.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.favorite_border,
-                  size: 64,
-                  color: Colors.grey[400],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No liked movies yet',
-                  style: GoogleFonts.openSans(
+          final likedMovies = controller.likedMovies;
+          
+          if (likedMovies.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.favorite_border,
+                    size: 64,
                     color: Colors.grey[400],
-                    fontSize: 16,
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Like movies to see them here',
-                  style: GoogleFonts.openSans(
-                    color: Colors.grey[600],
-                    fontSize: 14,
+                  const SizedBox(height: 16),
+                  Text(
+                    'No liked movies yet',
+                    style: GoogleFonts.openSans(
+                      color: Colors.grey[400],
+                      fontSize: 16,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          );
-        }
+                  const SizedBox(height: 8),
+                  Text(
+                    'Like movies to see them here',
+                    style: GoogleFonts.openSans(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
 
-        if (_isGridView) {
-          return GridView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.625,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            itemCount: likedMovies.length,
-            itemBuilder: (context, index) {
-              final movie = likedMovies[index];
-              return GestureDetector(
-                onTap: () => Get.toNamed(AppRoutes.movieDetailPath(movie.id.toString())),
-                child: Stack(
-                  children: [
-                    MovieCard(movie: movie),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.favorite,
-                          color: Colors.red,
+          if (_isGridView) {
+            return GridView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.625,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+              ),
+              itemCount: likedMovies.length,
+              itemBuilder: (context, index) {
+                final movie = likedMovies[index];
+                return GestureDetector(
+                  onTap: () => Get.toNamed(AppRoutes.movieDetailPath(movie.id.toString())),
+                  child: Stack(
+                    children: [
+                      MovieCard(movie: movie),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.favorite,
+                            color: Colors.red,
+                          ),
+                          onPressed: () => controller.toggleFavorite(movie),
                         ),
-                        onPressed: () => _likesController.toggleFavorite(movie),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        } else {
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: likedMovies.length,
-            itemBuilder: (context, index) {
-              final movie = likedMovies[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    GestureDetector(
-                      onTap: () => Get.toNamed(AppRoutes.movieDetailPath(movie.id.toString())),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: movie.posterUrl.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: movie.posterUrl,
-                              width: 100,
-                              height: 150,
-                              fit: BoxFit.cover,
-                              memCacheWidth: 200,
-                              memCacheHeight: 300,
-                              placeholder: (context, url) => _buildPlaceholder(),
-                              errorWidget: (context, url, error) => _buildPlaceholder(),
-                            )
-                          : _buildPlaceholder(),
+                    ],
+                  ),
+                );
+              },
+            );
+          } else {
+            return ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: likedMovies.length,
+              itemBuilder: (context, index) {
+                final movie = likedMovies[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Get.toNamed(AppRoutes.movieDetailPath(movie.id.toString())),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: movie.posterUrl.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: movie.posterUrl,
+                                width: 100,
+                                height: 150,
+                                fit: BoxFit.cover,
+                                memCacheWidth: 200,
+                                memCacheHeight: 300,
+                                placeholder: (context, url) => _buildPlaceholder(),
+                                errorWidget: (context, url, error) => _buildPlaceholder(),
+                              )
+                            : _buildPlaceholder(),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  movie.title,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    movie.title,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.favorite,
-                                  color: Colors.red,
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.favorite,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () => controller.toggleFavorite(movie),
                                 ),
-                                onPressed: () => _likesController.toggleFavorite(movie),
+                              ],
+                            ),
+                            if (movie.releaseDate.isNotEmpty) ...[
+                              const SizedBox(height: 0),
+                              Text(
+                                movie.releaseDate.split('-')[0],
+                                style: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: 14,
+                                ),
                               ),
                             ],
-                          ),
-                          if (movie.releaseDate.isNotEmpty) ...[
-                            const SizedBox(height: 0),
-                            Text(
-                              movie.releaseDate.split('-')[0],
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 14,
+                            if (movie.overview.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                movie.overview,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: 14,
+                                ),
                               ),
-                            ),
+                            ],
                           ],
-                          if (movie.overview.isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              movie.overview,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        }
-      }),
+                    ],
+                  ),
+                );
+              },
+            );
+          }
+        },
+      ),
     );
   }
 

@@ -5,8 +5,8 @@ import 'package:letterboxd/core/services/tmdb_service.dart';
 
 class LikesController extends GetxController {
   final authController = Get.find<AuthController>();
-  final RxBool isLoading = false.obs;
-  final RxList<Movie> likedMovies = <Movie>[].obs;
+  bool isLoading = false;
+  List<Movie> likedMovies = [];
 
   @override
   void onInit() {
@@ -17,10 +17,12 @@ class LikesController extends GetxController {
   Future<void> refreshLikedMovies() async {
     if (!authController.isLoggedIn) return;
     
-    isLoading.value = true;
+    isLoading = true;
+    update();
+    
     try {
       final movies = await TMDBService.getFavoriteMovies(authController.sessionId!);
-      likedMovies.value = movies;
+      likedMovies = movies;
     } catch (e) {
       print('Error fetching liked movies: $e');
       Get.snackbar(
@@ -29,7 +31,8 @@ class LikesController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
-      isLoading.value = false;
+      isLoading = false;
+      update();
     }
   }
 
@@ -67,6 +70,7 @@ class LikesController extends GetxController {
             snackPosition: SnackPosition.BOTTOM,
           );
         }
+        update();
       }
     } catch (e) {
       Get.snackbar(
