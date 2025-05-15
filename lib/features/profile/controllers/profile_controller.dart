@@ -8,6 +8,7 @@ class ProfileController extends GetxController {
   
   List<Movie> favoriteMovies = [];
   List<Movie> recentlyWatched = [];
+  int listsCount = 0;
   bool isLoading = false;
 
   @override
@@ -27,10 +28,12 @@ class ProfileController extends GetxController {
       final results = await Future.wait([
         TMDBService.getFavoriteMovies(authController.sessionId!),
         TMDBService.getRatedMovies(authController.sessionId!),
+        TMDBService.getLists(authController.sessionId!),
       ]);
 
-      favoriteMovies = results[0];
-      recentlyWatched = results[1];
+      favoriteMovies = results[0] as List<Movie>;
+      recentlyWatched = results[1] as List<Movie>;
+      listsCount = (results[2] as List).length;
     } catch (e) {
       Get.snackbar(
         'Error',

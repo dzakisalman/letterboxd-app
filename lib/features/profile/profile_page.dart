@@ -142,7 +142,7 @@ class ProfilePage extends StatelessWidget {
                         ),
                         Expanded(
                           child: _buildStatItem(
-                            '0', // TODO: Ganti dengan jumlah list dari TMDB jika sudah ada endpoint
+                            '${controller.listsCount}',
                             'Lists',
                             Color(0xFFE9A6A6)!,
                           ),
