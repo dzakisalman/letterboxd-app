@@ -88,118 +88,120 @@ class _ListDetailsPageState extends State<ListDetailsPage> {
       body: RefreshIndicator(
         onRefresh: () async => controller.refreshList(),
         color: const Color(0xFFE9A6A6),
-        child: Obx(() {
-          if (controller.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (controller.error != null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Error loading movies', style: GoogleFonts.openSans(color: Colors.white)),
-                  const SizedBox(height: 8),
-                  ElevatedButton(
-                    onPressed: controller.refreshList,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE9A6A6),
-                      foregroundColor: Colors.black,
-                    ),
-                    child: const Text('Try Again'),
-                  ),
-                ],
-              ),
-            );
-          }
-          // Sorting logic
-          List<Movie> sortedMovies = List.from(controller.movies);
-          sortedMovies.sort((a, b) => _compareMovies(a, b, _sortBy));
-          return ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              // HEADER
-              Container(
-                color: const Color(0xFF1F1D36),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        child: GetBuilder<ListDetailsController>(
+          builder: (controller) {
+            if (controller.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (controller.error != null) {
+              return Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 20,
-                          backgroundColor: Colors.grey[800],
-                          backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
-                              ? NetworkImage(avatarUrl)
-                              : null,
-                          child: (avatarUrl == null || avatarUrl.isEmpty)
-                              ? Text(
-                                  displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-                                  style: GoogleFonts.openSans(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16,
-                                  ),
-                                )
-                              : null,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          displayName,
-                          style: GoogleFonts.openSans(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      widget.list['name'] ?? 'Untitled List',
-                      style: GoogleFonts.openSans(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 22,
-                      ),
-                    ),
+                    Text('Error loading movies', style: GoogleFonts.openSans(color: Colors.white)),
                     const SizedBox(height: 8),
-                    Text(
-                      widget.list['description'] ?? 'No description',
-                      style: GoogleFonts.openSans(
-                        color: Colors.grey[400],
-                        fontSize: 15,
+                    ElevatedButton(
+                      onPressed: controller.refreshList,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE9A6A6),
+                        foregroundColor: Colors.black,
                       ),
+                      child: const Text('Try Again'),
                     ),
                   ],
                 ),
-              ),
-              // MOVIE LIST
-              ...List.generate(sortedMovies.length, (index) {
-                final movie = sortedMovies[index];
-                return Column(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => MovieDetailPage(movieId: movie.id.toString()),
+              );
+            }
+            // Sorting logic
+            List<Movie> sortedMovies = List.from(controller.movies);
+            sortedMovies.sort((a, b) => _compareMovies(a, b, _sortBy));
+            return ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                // HEADER
+                Container(
+                  color: const Color(0xFF1F1D36),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Colors.grey[800],
+                            backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
+                                ? NetworkImage(avatarUrl)
+                                : null,
+                            child: (avatarUrl == null || avatarUrl.isEmpty)
+                                ? Text(
+                                    displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
+                                    style: GoogleFonts.openSans(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
+                                  )
+                                : null,
                           ),
-                        );
-                      },
-                      child: MovieListItem(
-                        rank: index + 1,
-                        movie: movie,
+                          const SizedBox(width: 12),
+                          Text(
+                            displayName,
+                            style: GoogleFonts.openSans(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    if (index != sortedMovies.length - 1)
-                      Divider(color: Colors.grey[800], thickness: 1, height: 0),
-                  ],
-                );
-              }),
-            ],
-          );
-        }),
+                      const SizedBox(height: 16),
+                      Text(
+                        widget.list['name'] ?? 'Untitled List',
+                        style: GoogleFonts.openSans(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 22,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        widget.list['description'] ?? 'No description',
+                        style: GoogleFonts.openSans(
+                          color: Colors.grey[400],
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // MOVIE LIST
+                ...List.generate(sortedMovies.length, (index) {
+                  final movie = sortedMovies[index];
+                  return Column(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => MovieDetailPage(movieId: movie.id.toString()),
+                            ),
+                          );
+                        },
+                        child: MovieListItem(
+                          rank: index + 1,
+                          movie: movie,
+                        ),
+                      ),
+                      if (index != sortedMovies.length - 1)
+                        Divider(color: Colors.grey[800], thickness: 1, height: 0),
+                    ],
+                  );
+                }),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

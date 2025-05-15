@@ -4,15 +4,15 @@ import 'package:letterboxd/core/services/tmdb_service.dart';
 
 class ListDetailsController extends GetxController {
   final String listId;
-  final _isLoading = false.obs;
-  final _error = RxnString();
-  final _movies = <Movie>[].obs;
+  bool _isLoading = false;
+  String? _error;
+  List<Movie> _movies = [];
 
   ListDetailsController({required this.listId});
 
   List<Movie> get movies => _movies;
-  bool get isLoading => _isLoading.value;
-  String? get error => _error.value;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
   @override
   void onInit() {
@@ -22,20 +22,22 @@ class ListDetailsController extends GetxController {
 
   Future<void> fetchListDetails() async {
     try {
-      _isLoading.value = true;
-      _error.value = null;
+      _isLoading = true;
+      _error = null;
+      update();
 
       final result = await TMDBService.getListDetails(listId);
       if (result['success']) {
-        _movies.value = result['movies'];
+        _movies = result['movies'];
       } else {
         throw Exception('Failed to load list details');
       }
     } catch (e) {
       print('[ListDetailsController] Error fetching list details: $e');
-      _error.value = e.toString();
+      _error = e.toString();
     } finally {
-      _isLoading.value = false;
+      _isLoading = false;
+      update();
     }
   }
 
