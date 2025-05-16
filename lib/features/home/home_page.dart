@@ -17,7 +17,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final homeController = Get.put(HomeController());
+    Get.put(HomeController());
     final authController = Get.find<AuthController>();
 
     return Scaffold(
@@ -93,34 +93,40 @@ class HomePage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          RichText(
-                            text: TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: 'Hello, ',
-                                  style: GoogleFonts.openSans(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
+                          Builder(
+                            builder: (context) {
+                              final textStyle = GoogleFonts.openSans(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              );
+                              
+                              return RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: 'Hello, ',
+                                      style: textStyle,
+                                    ),
+                                    TextSpan(
+                                      text: '${authController.currentUser?.name ?? 'Guest'}',
+                                      style: textStyle.copyWith(color: const Color(0xFFE9A6A6)),
+                                    ),
+                                    TextSpan(
+                                      text: '!',
+                                      style: textStyle,
+                                    ),
+                                  ],
                                 ),
-                                TextSpan(
-                                  text: '${authController.currentUser?.name ?? 'Guest'}!',
-                                  style: GoogleFonts.openSans(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: const Color(0xFFE9A6A6),
-                                  ),
-                                ),
-                              ],
-                            ),
+                              );
+                            }
                           ),
                           const SizedBox(height: 4),
                           Text(
                             'Review or track film you\'ve watched...',
                             style: GoogleFonts.openSans(
                               fontSize: 14,
-                              color: Colors.grey[400],
+                              color: Colors.white,
                             ),
                           ),
                         ],
@@ -292,74 +298,6 @@ class _MovieCard extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _ListCard extends StatelessWidget {
-  final String title;
-  final String author;
-  final String posterPath;
-
-  const _ListCard({
-    required this.title,
-    required this.author,
-    required this.posterPath,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 58,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: SizedBox(
-              width: 58,
-              height: 82,
-              child: CachedNetworkImage(
-                imageUrl: 'https://image.tmdb.org/t/p/w500$posterPath',
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  color: Colors.grey[800],
-                  child: const Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
-                  ),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  color: Colors.grey[800],
-                  child: const Icon(Icons.error),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: GoogleFonts.openSans(
-              color: Colors.white,
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            'by $author',
-            style: GoogleFonts.openSans(
-              color: Colors.grey[400],
-              fontSize: 8,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
       ),
     );
   }
