@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:letterboxd/core/models/movie.dart';
 import 'package:letterboxd/core/services/tmdb_service.dart';
+import 'dart:async';
 
 class ExploreController extends GetxController {
   final RxString searchQuery = ''.obs;
@@ -10,12 +11,20 @@ class ExploreController extends GetxController {
   final RxString errorMessage = ''.obs;
   final RxBool hasSearched = false.obs;
   final RxList<String> searchHistory = <String>[].obs;
+  
+  Timer? _debounce;
 
   @override
   void onInit() {
     super.onInit();
     // Load search history from storage
     loadSearchHistory();
+  }
+
+  @override
+  void onClose() {
+    _debounce?.cancel();
+    super.onClose();
   }
 
   void loadSearchHistory() {
@@ -54,6 +63,21 @@ class ExploreController extends GetxController {
 
   void updateSearchQuery(String query) {
     searchQuery.value = query;
+    
+    // Cancel any existing timer
+    _debounce?.cancel();
+    
+    // If query is empty, clear results
+    if (query.isEmpty) {
+      searchResults.clear();
+      hasSearched.value = false;
+      return;
+    }
+    
+    // Set up a new timer
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      performSearch();
+    });
   }
 
   void clearSearch() {

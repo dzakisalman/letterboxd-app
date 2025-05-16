@@ -60,7 +60,6 @@ class ExplorePage extends StatelessWidget {
                 child: TextField(
                   controller: textController,
                   onChanged: controller.updateSearchQuery,
-                  onSubmitted: (_) => controller.performSearch(),
                   style: GoogleFonts.openSans(
                     color: Colors.white,
                     fontSize: 14,
@@ -243,7 +242,7 @@ class ExplorePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Press search to find movies',
+                  'Start typing to search movies',
                   style: GoogleFonts.openSans(
                     color: Colors.grey[600],
                     fontSize: 16,
