@@ -10,6 +10,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:letterboxd/core/widgets/review_card.dart';
 import 'package:letterboxd/features/review/models/review.dart';
 import 'package:letterboxd/routes/app_routes.dart';
+import 'package:letterboxd/features/movie/movie_reviews_page.dart';
 
 // Custom clipper for diagonal line
 class DiagonalClipper extends CustomClipper<Path> {
@@ -570,7 +571,10 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                   ),
                                   TextButton(
                                     onPressed: () {
-                                      // TODO: Navigate to all reviews page
+                                      Get.to(() => MovieReviewsPage(
+                                        movie: movie,
+                                        reviews: controller.reviews,
+                                      ));
                                     },
                                     child: Text(
                                       'See All',
