@@ -49,7 +49,8 @@ class HomePage extends StatelessWidget {
                             builder: (context) => IconButton(
                               icon: SvgPicture.asset(
                                 'assets/icons/sidebar.svg',
-                                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                                colorFilter: const ColorFilter.mode(
+                                    Colors.white, BlendMode.srcIn),
                               ),
                               onPressed: () {
                                 Scaffold.of(context).openDrawer();
@@ -71,17 +72,25 @@ class HomePage extends StatelessWidget {
                             child: CircleAvatar(
                               radius: 20,
                               backgroundColor: Colors.grey[800],
-                              backgroundImage: authController.currentUser?.profileImage != null
-                                ? NetworkImage(authController.currentUser!.profileImage!)
-                                : null,
-                              child: authController.currentUser?.profileImage == null
-                                ? Text(
-                                    (authController.currentUser?.name.isNotEmpty == true
-                                      ? authController.currentUser!.name[0].toUpperCase()
-                                      : 'G'),
-                                    style: const TextStyle(color: Colors.white),
-                                  )
-                                : null,
+                              backgroundImage: authController
+                                          .currentUser?.profileImage !=
+                                      null
+                                  ? NetworkImage(
+                                      authController.currentUser!.profileImage!)
+                                  : null,
+                              child: authController.currentUser?.profileImage ==
+                                      null
+                                  ? Text(
+                                      (authController.currentUser?.name
+                                                  .isNotEmpty ==
+                                              true
+                                          ? authController.currentUser!.name[0]
+                                              .toUpperCase()
+                                          : 'G'),
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                    )
+                                  : null,
                             ),
                           ),
                         ],
@@ -94,34 +103,34 @@ class HomePage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Builder(
-                            builder: (context) {
-                              final textStyle = GoogleFonts.openSans(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              );
-                              
-                              return RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: 'Hello, ',
-                                      style: textStyle,
-                                    ),
-                                    TextSpan(
-                                      text: '${authController.currentUser?.name ?? 'Guest'}',
-                                      style: textStyle.copyWith(color: const Color(0xFFE9A6A6)),
-                                    ),
-                                    TextSpan(
-                                      text: '!',
-                                      style: textStyle,
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }
-                          ),
+                          Builder(builder: (context) {
+                            final textStyle = GoogleFonts.openSans(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            );
+
+                            return RichText(
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: 'Hello, ',
+                                    style: textStyle,
+                                  ),
+                                  TextSpan(
+                                    text:
+                                        '${authController.currentUser?.name ?? 'Guest'}',
+                                    style: textStyle.copyWith(
+                                        color: const Color(0xFFE9A6A6)),
+                                  ),
+                                  TextSpan(
+                                    text: '!',
+                                    style: textStyle,
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
                           const SizedBox(height: 4),
                           Text(
                             'Review or track film you\'ve watched...',
@@ -158,7 +167,8 @@ class HomePage extends StatelessWidget {
                         itemBuilder: (context, index) {
                           return Padding(
                             padding: const EdgeInsets.only(right: 16),
-                            child: _MovieCard(movie: controller.popularMovies[index]),
+                            child: _MovieCard(
+                                movie: controller.popularMovies[index]),
                           );
                         },
                       ),
@@ -206,18 +216,29 @@ class HomePage extends StatelessWidget {
                                 id: review['movieId']?.toString() ?? 'unknown',
                                 userId: 'user_123', // TODO: Get actual user ID
                                 username: review['author'] ?? 'Anonymous',
-                                userAvatarUrl: review['avatarUrl'] ?? 'https://via.placeholder.com/150',
-                                movieId: review['movieId']?.toString() ?? 'unknown',
-                                movieTitle: review['movieTitle'] ?? 'Untitled Movie',
-                                movieYear: review['createdAt']?.substring(0, 4) ?? '2024',
+                                userAvatarUrl: review['avatarUrl'] ??
+                                    'https://via.placeholder.com/150',
+                                movieId:
+                                    review['movieId']?.toString() ?? 'unknown',
+                                movieTitle:
+                                    review['movieTitle'] ?? 'Untitled Movie',
+                                movieYear:
+                                    review['createdAt']?.substring(0, 4) ??
+                                        '2024',
                                 moviePosterUrl: review['posterPath'] ?? '',
-                                rating: (review['rating'] as num?)?.toDouble() ?? 0.0,
-                                content: review['content'] ?? 'No review content available',
-                                watchedDate: DateTime.tryParse(review['createdAt'] ?? '') ?? DateTime.now(),
+                                rating:
+                                    (review['rating'] as num?)?.toDouble() ??
+                                        0.0,
+                                content: review['content'] ??
+                                    'No review content available',
+                                watchedDate: DateTime.tryParse(
+                                        review['createdAt'] ?? '') ??
+                                    DateTime.now(),
                                 likes: 0,
                                 isLiked: false,
                               );
-                              Get.toNamed(AppRoutes.review, arguments: reviewObj);
+                              Get.toNamed(AppRoutes.review,
+                                  arguments: reviewObj);
                             },
                           );
                         },
@@ -275,4 +296,4 @@ class _MovieCard extends StatelessWidget {
       ),
     );
   }
-} 
+}
