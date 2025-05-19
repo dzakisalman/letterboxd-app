@@ -138,12 +138,16 @@ class ReviewCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
                     children: [
-                      Text(
-                        movieTitle,
-                        style: GoogleFonts.openSans(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                      Flexible(
+                        child: Text(
+                          movieTitle,
+                          style: GoogleFonts.openSans(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          softWrap: true,
+                          overflow: TextOverflow.visible,
                         ),
                       ),
                       Text(
