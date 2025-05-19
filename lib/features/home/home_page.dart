@@ -11,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:letterboxd/core/widgets/custom_bottom_nav.dart';
 import 'package:letterboxd/core/widgets/review_card.dart';
+import 'package:letterboxd/features/home/widgets/popular_lists_section.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -165,35 +166,8 @@ class HomePage extends StatelessWidget {
 
                     const SizedBox(height: 10),
 
-                    // // Popular Lists Section
-                    // Padding(
-                    //   padding: const EdgeInsets.symmetric(horizontal: 24),
-                    //   child: Text(
-                    //     'Popular Lists This Month',
-                    //     style: GoogleFonts.openSans(
-                    //       fontSize: 18,
-                    //       fontWeight: FontWeight.bold,
-                    //       color: Colors.white,
-                    //     ),
-                    //   ),
-                    // ),
-                    // const SizedBox(height: 16),
-                    // SizedBox(
-                    //   height: 200,
-                    //   child: Obx(() => ListView.builder(
-                    //     scrollDirection: Axis.horizontal,
-                    //     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    //     itemCount: homeController.popularLists.length,
-                    //     itemBuilder: (context, index) {
-                    //       final list = homeController.popularLists[index];
-                    //       return _ListCard(
-                    //         title: list['title'],
-                    //         author: list['author'],
-                    //         posterPath: list['posterPath'],
-                    //       );
-                    //     },
-                    //   )),
-                    // ),
+                    // Popular Lists Section
+                    PopularListsSection(),
 
                     const SizedBox(height: 32),
 

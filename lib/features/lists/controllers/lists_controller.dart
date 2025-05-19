@@ -31,6 +31,19 @@ class ListsController extends GetxController {
       }
 
       final lists = await TMDBService.getLists(sessionId);
+      // Fetch detail film untuk setiap list
+      for (final list in lists) {
+        try {
+          final detail = await TMDBService.getListDetails(list['id'].toString());
+          if (detail['success'] == true) {
+            list['movies'] = detail['movies']; // List<Movie>
+          } else {
+            list['movies'] = [];
+          }
+        } catch (e) {
+          list['movies'] = [];
+        }
+      }
       _lists = lists;
     } catch (e) {
       print('[ListsController] Error fetching lists: $e');
