@@ -17,6 +17,7 @@ import 'package:letterboxd/features/movie/pages/likes_page.dart';
 import 'package:letterboxd/features/lists/pages/lists_page.dart';
 import 'package:letterboxd/features/lists/pages/create_list_page.dart';
 import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
+import 'package:letterboxd/features/notification/notification_page.dart';
 
 class AppPages {
   static final routes = [
@@ -98,6 +99,10 @@ class AppPages {
       middlewares: [
         RouteGuard(),
       ],
+    ),
+    GetPage(
+      name: AppRoutes.notification,
+      page: () => const NotificationPage(),
     ),
   ];
 }

@@ -22,7 +22,7 @@ class CustomBottomNav extends StatelessWidget {
         Get.offAllNamed(AppRoutes.explore);
         break;
       case 2:
-        Get.offAllNamed(AppRoutes.activity);
+        Get.offAllNamed(AppRoutes.notification);
         break;
       case 3:
         Get.offAllNamed(AppRoutes.profile);
