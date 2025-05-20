@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:letterboxd/features/lists/controllers/lists_controller.dart';
 import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:letterboxd/features/lists/pages/list_details_page.dart';
 
 class PopularListsSection extends StatelessWidget {
   const PopularListsSection({super.key});
@@ -93,78 +94,83 @@ class _ListCard extends StatelessWidget {
         })
         .where((url) => url.isNotEmpty)
         .toList();
-    return Container(
-      width: 180,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Poster stack
-            posterUrls.isNotEmpty
-                ? MovieStackList(posterUrls: posterUrls)
-                : Center(
-                    child: Container(
-                      width: 60,
-                      height: 90,
-                      color: Colors.grey[800],
-                      child: const Icon(Icons.movie,
-                          color: Colors.white, size: 32),
+    return GestureDetector(
+      onTap: () {
+        Get.to(() => ListDetailsPage(list: list));
+      },
+      child: Container(
+        width: 180,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Poster stack
+              posterUrls.isNotEmpty
+                  ? MovieStackList(posterUrls: posterUrls)
+                  : Center(
+                      child: Container(
+                        width: 60,
+                        height: 90,
+                        color: Colors.grey[800],
+                        child: const Icon(Icons.movie,
+                            color: Colors.white, size: 32),
+                      ),
+                    ),
+              const SizedBox(height: 16),
+              Text(
+                list['name'] ?? 'Untitled List',
+                style: GoogleFonts.openSans(
+                  color: const Color(0xFFE9A6A6),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 10,
+                    backgroundColor: Colors.grey[700],
+                    backgroundImage:
+                        userAvatar != null ? NetworkImage(userAvatar!) : null,
+                    child: userAvatar == null
+                        ? Text(
+                            userName.isNotEmpty ? userName[0].toUpperCase() : 'G',
+                            style: const TextStyle(
+                                color: Color(0xFFE9A6A6),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold))
+                        : null,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      userName,
+                      style: GoogleFonts.openSans(
+                          color: const Color(0xFFE9A6A6),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-            const SizedBox(height: 16),
-            Text(
-              list['name'] ?? 'Untitled List',
-              style: GoogleFonts.openSans(
-                color: const Color(0xFFE9A6A6),
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+                  const SizedBox(width: 6),
+                  const Icon(Icons.favorite, color: Color(0xFFE74C3C), size: 14),
+                  const SizedBox(width: 2),
+                  Text('500',
+                      style: TextStyle(color: Color(0xFFE9A6A6), fontSize: 11)),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.chat_bubble_outline,
+                      color: Colors.white, size: 14),
+                  const SizedBox(width: 2),
+                  Text('79', style: TextStyle(color: Colors.white, fontSize: 11)),
+                ],
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 10,
-                  backgroundColor: Colors.grey[700],
-                  backgroundImage:
-                      userAvatar != null ? NetworkImage(userAvatar!) : null,
-                  child: userAvatar == null
-                      ? Text(
-                          userName.isNotEmpty ? userName[0].toUpperCase() : 'G',
-                          style: const TextStyle(
-                              color: Color(0xFFE9A6A6),
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold))
-                      : null,
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    userName,
-                    style: GoogleFonts.openSans(
-                        color: const Color(0xFFE9A6A6),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                const Icon(Icons.favorite, color: Color(0xFFE74C3C), size: 14),
-                const SizedBox(width: 2),
-                Text('500',
-                    style: TextStyle(color: Color(0xFFE9A6A6), fontSize: 11)),
-                const SizedBox(width: 6),
-                const Icon(Icons.chat_bubble_outline,
-                    color: Colors.white, size: 14),
-                const SizedBox(width: 2),
-                Text('79', style: TextStyle(color: Colors.white, fontSize: 11)),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
