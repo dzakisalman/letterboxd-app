@@ -3,6 +3,8 @@ import 'package:letterboxd/core/models/movie.dart';
 import 'package:letterboxd/core/services/tmdb_service.dart';
 import 'dart:async';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class ExploreController extends GetxController {
   final RxString searchQuery = ''.obs;
   final RxList<Movie> searchResults = <Movie>[].obs;
@@ -13,11 +15,17 @@ class ExploreController extends GetxController {
   final RxList<String> searchHistory = <String>[].obs;
   
   Timer? _debounce;
+  static const String _searchHistoryKey = 'search_history';
+  late SharedPreferences _prefs;
 
   @override
   void onInit() {
     super.onInit();
-    // Load search history from storage
+    _initPrefs();
+  }
+
+  Future<void> _initPrefs() async {
+    _prefs = await SharedPreferences.getInstance();
     loadSearchHistory();
   }
 
@@ -28,13 +36,14 @@ class ExploreController extends GetxController {
   }
 
   void loadSearchHistory() {
-    // TODO: Implement loading from storage
-    // For now, using a mock list
-    searchHistory.value = [];
+    final List<String>? history = _prefs.getStringList(_searchHistoryKey);
+    if (history != null) {
+      searchHistory.value = history;
+    }
   }
 
   void saveSearchHistory() {
-    // TODO: Implement saving to storage
+    _prefs.setStringList(_searchHistoryKey, searchHistory);
   }
 
   void addToHistory(String query) {
