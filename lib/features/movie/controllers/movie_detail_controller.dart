@@ -4,13 +4,14 @@ import 'package:letterboxd/core/services/tmdb_service.dart';
 import 'package:letterboxd/routes/app_routes.dart';
 import 'package:letterboxd/features/authentication/controllers/auth_controller.dart';
 import 'package:letterboxd/core/services/api_service.dart';
+import 'package:letterboxd/features/review/models/review.dart';
 
 class MovieDetailController extends GetxController {
   bool isLoading = true;
   Movie? movie;
   List<Map<String, dynamic>> cast = [];
   List<Map<String, dynamic>> crew = [];
-  List<Map<String, dynamic>> reviews = [];
+  List<Review> reviews = [];
   List<Movie> similarMovies = [];
   List<Movie> recommendedMovies = [];
   bool isInWatchlist = false;
@@ -48,7 +49,37 @@ class MovieDetailController extends GetxController {
 
       // Load reviews
       final reviewsData = await TMDBService.getMovieReviews(movieIdInt);
-      reviews = reviewsData;
+      reviews = reviewsData.map((reviewData) {
+        final authorDetails = reviewData['author_details'] as Map<String, dynamic>? ?? {};
+        final avatarPath = authorDetails['avatar_path']?.toString();
+        String? avatarUrl;
+        
+        if (avatarPath != null && avatarPath.isNotEmpty) {
+          if (avatarPath.startsWith('/http') || avatarPath.startsWith('http')) {
+            avatarUrl = avatarPath.startsWith('/') ? avatarPath.substring(1) : avatarPath;
+          } else {
+            avatarUrl = 'https://image.tmdb.org/t/p/w185$avatarPath';
+          }
+        } else {
+          avatarUrl = 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(reviewData['author'] ?? 'Anonymous')}&background=random';
+        }
+
+        return Review.fromJson({
+          'id': reviewData['id']?.toString() ?? '',
+          'user_id': authorDetails['id']?.toString() ?? '',
+          'username': authorDetails['username']?.toString() ?? reviewData['author']?.toString() ?? 'Anonymous',
+          'user_avatar_url': avatarUrl ?? '',
+          'movie_id': movieId,
+          'movie_title': movie?.title ?? '',
+          'movie_year': movie?.releaseDate.substring(0, 4) ?? '',
+          'movie_poster_url': movie?.posterUrl ?? '',
+          'rating': authorDetails['rating'] != null ? (authorDetails['rating'] as num).toDouble() : 0.0,
+          'content': reviewData['content']?.toString() ?? '',
+          'watched_date': reviewData['created_at']?.toString() ?? DateTime.now().toIso8601String(),
+          'likes': 0, // TODO: Implement likes count
+          'is_liked': false, // TODO: Implement like status
+        });
+      }).toList();
 
       // Load similar movies
       final similarData = await TMDBService.getSimilarMovies(movieIdInt);

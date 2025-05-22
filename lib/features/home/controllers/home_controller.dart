@@ -1,12 +1,13 @@
 import 'package:get/get.dart';
 import 'package:letterboxd/core/models/movie.dart';
 import 'package:letterboxd/core/services/tmdb_service.dart';
+import 'package:letterboxd/features/review/models/review.dart';
 
 class HomeController extends GetxController {
   List<Movie> popularMovies = [];
   List<Movie> trendingMovies = [];
   List<Map<String, dynamic>> popularLists = [];
-  List<Map<String, dynamic>> recentReviews = [];
+  List<Review> recentReviews = [];
   bool isLoading = false;
   bool isLoadingMore = false;
 
@@ -147,7 +148,7 @@ class HomeController extends GetxController {
       
       print('[Home] Received ${reviews.length} review sets');
       
-      final List<Map<String, dynamic>> allReviews = [];
+      final List<Review> allReviews = [];
       
       for (var i = 0; i < reviews.length; i++) {
         print('[Home] Processing review set $i');
@@ -177,18 +178,23 @@ class HomeController extends GetxController {
           }
           
           final reviewData = {
-            'movieTitle': movie.title ?? 'Untitled Movie',
-            'movieId': movie.id ?? '',
-            'posterPath': movie.posterUrl ?? '',
-            'author': authorDetails['name']?.toString() ?? review['author']?.toString() ?? 'Anonymous',
-            'avatarUrl': avatarUrl,
-            'rating': (authorDetails['rating'] ?? 0) / 2,
+            'id': review['id']?.toString() ?? '',
+            'user_id': authorDetails['id']?.toString() ?? '',
+            'username': authorDetails['username']?.toString() ?? review['author']?.toString() ?? 'Anonymous',
+            'user_avatar_url': avatarUrl,
+            'movie_id': movie.id.toString(),
+            'movie_title': movie.title,
+            'movie_year': movie.releaseDate.substring(0, 4),
+            'movie_poster_url': movie.posterUrl,
+            'rating': authorDetails['rating'] != null ? (authorDetails['rating'] as num).toDouble() : 0.0,
             'content': review['content']?.toString() ?? 'No review content available',
-            'createdAt': review['created_at']?.toString() ?? DateTime.now().toIso8601String(),
+            'watched_date': review['created_at']?.toString() ?? DateTime.now().toIso8601String(),
+            'likes': 0, // TODO: Implement likes count
+            'is_liked': false, // TODO: Implement like status
           };
           
           print('[Home] Processed review data: $reviewData');
-          allReviews.add(reviewData);
+          allReviews.add(Review.fromJson(reviewData));
         } else {
           print('[Home] No reviews found for movie $i');
         }

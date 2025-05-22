@@ -203,42 +203,16 @@ class HomePage extends StatelessWidget {
                         itemBuilder: (context, index) {
                           final review = controller.recentReviews[index];
                           return ReviewCard(
-                            authorName: review['author'],
-                            avatarUrl: review['avatarUrl'],
-                            rating: review['rating'],
-                            content: review['content'],
+                            authorName: review.username,
+                            avatarUrl: review.userAvatarUrl,
+                            rating: (review.rating / 2).clamp(0, 5),
+                            content: review.content,
                             commentCount: 8,
-                            movieTitle: review['movieTitle'],
-                            movieYear: '2019',
-                            moviePosterUrl: review['posterPath'],
+                            movieTitle: review.movieTitle,
+                            movieYear: review.movieYear,
+                            moviePosterUrl: review.moviePosterUrl,
                             onTap: () {
-                              final reviewObj = Review(
-                                id: review['movieId']?.toString() ?? 'unknown',
-                                userId: 'user_123', // TODO: Get actual user ID
-                                username: review['author'] ?? 'Anonymous',
-                                userAvatarUrl: review['avatarUrl'] ??
-                                    'https://via.placeholder.com/150',
-                                movieId:
-                                    review['movieId']?.toString() ?? 'unknown',
-                                movieTitle:
-                                    review['movieTitle'] ?? 'Untitled Movie',
-                                movieYear:
-                                    review['createdAt']?.substring(0, 4) ??
-                                        '2024',
-                                moviePosterUrl: review['posterPath'] ?? '',
-                                rating:
-                                    (review['rating'] as num?)?.toDouble() ??
-                                        0.0,
-                                content: review['content'] ??
-                                    'No review content available',
-                                watchedDate: DateTime.tryParse(
-                                        review['createdAt'] ?? '') ??
-                                    DateTime.now(),
-                                likes: 0,
-                                isLiked: false,
-                              );
-                              Get.toNamed(AppRoutes.review,
-                                  arguments: reviewObj);
+                              Get.toNamed(AppRoutes.review, arguments: review);
                             },
                           );
                         },

@@ -35,7 +35,7 @@ class Movie {
     ? TMDBService.getImageUrl(backdropPath!, size: 'original') 
     : '';
 
-  factory Movie.fromJson(Map<String, dynamic> json) {
+  static Movie fromJson(Map<String, dynamic> json) {
     return Movie(
       id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       title: json['title']?.toString() ?? 'Untitled Movie',

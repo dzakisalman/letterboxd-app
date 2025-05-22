@@ -29,7 +29,7 @@ class Review {
     this.isLiked = false,
   });
 
-  factory Review.fromJson(Map<String, dynamic> json) {
+  static Review fromJson(Map<String, dynamic> json) {
     return Review(
       id: json['id'] as String,
       userId: json['user_id'] as String,

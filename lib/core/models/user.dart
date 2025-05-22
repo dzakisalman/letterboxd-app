@@ -21,7 +21,7 @@ class User {
     this.following = 0,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) {
+  static User fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'],
       name: json['name'] ?? '',

@@ -23,7 +23,7 @@ class DiaryEntry {
     required this.watchedDate,
   });
 
-  factory DiaryEntry.fromCsv(Map<String, dynamic> map) {
+  static DiaryEntry fromCsv(Map<String, dynamic> map) {
     DateTime parseDate(String? dateStr) {
       if (dateStr == null || dateStr.isEmpty) {
         return DateTime.now();
@@ -50,5 +50,20 @@ class DiaryEntry {
       userRating: double.tryParse(map['Your Rating']?.toString() ?? '') ?? 0.0,
       watchedDate: parseDate(map['Date Rated']?.toString()),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'tmdb_id': tmdbId,
+      'imdb_id': imdbId,
+      'type': type,
+      'title': title,
+      'release_date': releaseDate.toIso8601String(),
+      'season_number': seasonNumber,
+      'episode_number': episodeNumber,
+      'tmdb_rating': tmdbRating,
+      'user_rating': userRating,
+      'watched_date': watchedDate.toIso8601String(),
+    };
   }
 } 

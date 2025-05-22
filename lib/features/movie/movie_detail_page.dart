@@ -11,6 +11,7 @@ import 'package:letterboxd/core/widgets/review_card.dart';
 import 'package:letterboxd/features/review/models/review.dart';
 import 'package:letterboxd/routes/app_routes.dart';
 import 'package:letterboxd/features/movie/movie_reviews_page.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 // Custom clipper for diagonal line
 class DiagonalClipper extends CustomClipper<Path> {
@@ -224,7 +225,7 @@ class _MovieTabWidgetState extends State<MovieTabWidget> with SingleTickerProvid
           labelPadding: const EdgeInsets.symmetric(horizontal: 15),
           indicatorPadding: const EdgeInsets.symmetric(horizontal: 1, vertical: 9),
           splashBorderRadius: BorderRadius.circular(20),
-          overlayColor: MaterialStateProperty.all(Colors.transparent),
+          overlayColor: WidgetStateProperty.all(Colors.transparent),
           tabAlignment: TabAlignment.start,
         ),
 
@@ -384,8 +385,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
-                                  Colors.black.withOpacity(0.1),
-                                  Colors.black.withOpacity(0.7),
+                                  Colors.black.withValues(alpha: 0),
+                                  Colors.black.withValues(alpha: 0.8),
                                 ],
                               ).createShader(rect);
                             },
@@ -573,14 +574,14 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                     onPressed: () {
                                       Get.to(() => MovieReviewsPage(
                                         movie: movie,
-                                        reviews: controller.reviews,
+                                        reviews: controller.reviews.map((review) => review.toJson()).toList(),
                                       ));
                                     },
-                                    child: Text(
+                                    child: const Text(
                                       'See All',
                                       style: TextStyle(
                                         fontSize: 14,
-                                        color: const Color(0xFF9C4FD6),
+                                        color: Color(0xFF9C4FD6),
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -620,7 +621,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     );
   }
   
-  Widget _buildReviewsList(List<dynamic> reviews, Movie movie) {
+  Widget _buildReviewsList(List<Review> reviews, Movie movie) {
     if (reviews.isEmpty) {
       return Center(
         child: Text(
@@ -635,47 +636,18 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
 
     return Column(
       children: reviews.take(3).map((review) {
-        final authorDetails = review['author_details'] ?? {};
-        final avatarPath = authorDetails['avatar_path']?.toString();
-        
-        String? avatarUrl;
-        if (avatarPath != null && avatarPath.isNotEmpty) {
-          if (avatarPath.startsWith('/http') || avatarPath.startsWith('http')) {
-            avatarUrl = avatarPath.startsWith('/') ? avatarPath.substring(1) : avatarPath;
-          } else {
-            avatarUrl = 'https://image.tmdb.org/t/p/w185$avatarPath';
-          }
-        } else {
-          avatarUrl = 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(review['author'] ?? 'Anonymous')}&background=random';
-        }
-        
         return ReviewCard(
-          authorName: review['author'] ?? 'Anonymous',
-          avatarUrl: avatarUrl,
-          rating: (authorDetails['rating'] ?? 0.0) / 2,
-          content: review['content'] ?? 'No content',
+          authorName: review.username,
+          avatarUrl: review.userAvatarUrl,
+          rating: review.rating,
+          content: review.content,
           commentCount: 0,
           movieTitle: movie.title,
           movieYear: movie.releaseDate.split('-')[0],
           moviePosterUrl: movie.posterUrl,
           isDetailPage: true,
           onTap: () {
-            final reviewObj = Review(
-              id: review['id'].toString(),
-              userId: authorDetails['id']?.toString() ?? 'unknown',
-              username: review['author'] ?? 'Anonymous',
-              userAvatarUrl: avatarPath ?? '',
-              movieId: movie.id.toString(),
-              movieTitle: movie.title,
-              movieYear: movie.releaseDate.split('-')[0],
-              moviePosterUrl: movie.posterUrl,
-              rating: (authorDetails['rating'] ?? 0.0) / 2,
-              content: review['content'] ?? 'No content',
-              watchedDate: DateTime.parse(review['created_at'] ?? DateTime.now().toIso8601String()),
-              likes: 0,
-              isLiked: false,
-            );
-            Get.toNamed(AppRoutes.review, arguments: reviewObj);
+            Get.toNamed(AppRoutes.review, arguments: review);
           },
         );
       }).toList(),
@@ -789,8 +761,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
 
   Widget _buildActionButton(String text,
       {required VoidCallback onPressed, required String svgPath}) {
-    final Color activeColor = const Color(0xFFE9A6A6);
-    final Color backgroundColor = const Color(0xFF1F1D36);
+    const Color activeColor = Color(0xFFE9A6A6);
+    const Color backgroundColor = Color(0xFF1F1D36);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -890,7 +862,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                 .toDouble() *
                             0.7,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white.withValues(alpha: 0.5),
                           borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(2),
                           ),
