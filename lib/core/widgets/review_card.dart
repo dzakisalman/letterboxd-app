@@ -185,9 +185,9 @@ class ReviewCard extends StatelessWidget {
                 // Rating stars and comments
                 Row(
                   children: [
-                    ...List.generate(rating.ceil(), (index) {
-                      final fullStars = rating.floor();
-                      final hasHalfStar = rating - fullStars >= 0.5;
+                    ...List.generate((rating / 2).ceil(), (index) {
+                      final fullStars = (rating / 2).floor();
+                      final hasHalfStar = (rating / 2) - fullStars >= 0.5;
                       
                       if (index < fullStars) {
                         return Padding(
