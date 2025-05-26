@@ -1136,6 +1136,30 @@ class TMDBService {
       print('[TMDB] ===== End Remove Movie Process =====\n');
     }
   }
+
+  static Future<List<Map<String, dynamic>>> getMovieVideos(int movieId) async {
+    return _makeRequest<List<Map<String, dynamic>>>(
+      endpoint: '/movie/$movieId/videos?api_key=$_apiKey&language=en-US',
+      parser: (data) {
+        try {
+          final results = data['results'] as List? ?? [];
+          print('[TMDB] Processing ${results.length} videos');
+          
+          return results.map((video) => {
+            'id': video['id']?.toString() ?? '',
+            'key': video['key']?.toString() ?? '',
+            'name': video['name']?.toString() ?? '',
+            'site': video['site']?.toString() ?? '',
+            'type': video['type']?.toString() ?? '',
+            'size': video['size']?.toString() ?? '',
+          }).toList();
+        } catch (e) {
+          print('[TMDB] Error parsing videos: $e');
+          return [];
+        }
+      },
+    );
+  }
 }
 
 class _CacheEntry {

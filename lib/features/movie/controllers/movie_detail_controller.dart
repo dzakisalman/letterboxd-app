@@ -7,11 +7,12 @@ import 'package:letterboxd/core/services/api_service.dart';
 import 'package:letterboxd/features/review/models/review.dart';
 
 class MovieDetailController extends GetxController {
-  bool isLoading = true;
+  bool _isLoading = false;
   Movie? movie;
   List<Map<String, dynamic>> cast = [];
   List<Map<String, dynamic>> crew = [];
   List<Review> reviews = [];
+  List<Map<String, dynamic>> videos = [];
   List<Movie> similarMovies = [];
   List<Movie> recommendedMovies = [];
   bool isInWatchlist = false;
@@ -21,32 +22,34 @@ class MovieDetailController extends GetxController {
   bool isFavorite = false;
   bool isInList = false;
 
+  bool get isLoading => _isLoading;
+
   Future<void> loadMovieDetails(String movieId) async {
     try {
-      isLoading = true;
+      _isLoading = true;
       update();
       
       final movieIdInt = int.parse(movieId);
       
       // Load movie details
-      final movieData = await TMDBService.getMovieDetails(movieIdInt);
-      movie = movieData;
-
-      // Load credits
-      final creditsData = await TMDBService.getMovieCredits(movieIdInt);
-      final castData = creditsData['cast'] as List;
-      final crewData = creditsData['crew'] as List;
+      movie = await TMDBService.getMovieDetails(movieIdInt);
       
-      cast = castData.map((item) => item as Map<String, dynamic>).toList();
-      crew = crewData.map((item) => item as Map<String, dynamic>).toList();
-
+      // Load credits
+      final credits = await TMDBService.getMovieCredits(movieIdInt);
+      cast = List<Map<String, dynamic>>.from(credits['cast'] ?? []);
+      crew = List<Map<String, dynamic>>.from(credits['crew'] ?? []);
+      
       // Find director
-      final director = crew.firstWhere(
-        (person) => person['job'] == 'Director',
-        orElse: () => {'name': 'Unknown'},
-      );
-      movieDirector = director['name'];
+      movieDirector = crew
+          .firstWhere(
+            (person) => person['job'] == 'Director',
+            orElse: () => {'name': 'Unknown'},
+          )['name']
+          .toString();
 
+      // Load videos
+      videos = await TMDBService.getMovieVideos(movieIdInt);
+      
       // Load reviews
       final reviewsData = await TMDBService.getMovieReviews(movieIdInt);
       reviews = reviewsData.map((reviewData) {
@@ -76,8 +79,8 @@ class MovieDetailController extends GetxController {
           'rating': authorDetails['rating'] != null ? (authorDetails['rating'] as num).toDouble() : 0.0,
           'content': reviewData['content']?.toString() ?? '',
           'watched_date': reviewData['created_at']?.toString() ?? DateTime.now().toIso8601String(),
-          'likes': 0, // TODO: Implement likes count
-          'is_liked': false, // TODO: Implement like status
+          'likes': 0,
+          'is_liked': false,
         });
       }).toList();
 
@@ -91,15 +94,17 @@ class MovieDetailController extends GetxController {
 
       // Check movie status
       await checkMovieStatus(movieIdInt);
-
+      
+      update();
     } catch (e) {
+      print('[MovieDetail] Error loading movie details: $e');
       Get.snackbar(
         'Error',
         'Failed to load movie details: ${e.toString()}',
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
-      isLoading = false;
+      _isLoading = false;
       update();
     }
   }
@@ -289,6 +294,7 @@ class MovieDetailController extends GetxController {
           );
         }
       }
+      update();
     } catch (e) {
       Get.snackbar(
         'Error',

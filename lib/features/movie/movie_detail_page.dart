@@ -12,6 +12,7 @@ import 'package:letterboxd/features/review/models/review.dart';
 import 'package:letterboxd/routes/app_routes.dart';
 import 'package:letterboxd/features/movie/movie_reviews_page.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:letterboxd/features/movie/widgets/youtube_player_widget.dart';
 
 // Custom clipper for diagonal line
 class DiagonalClipper extends CustomClipper<Path> {
@@ -43,12 +44,14 @@ class MovieTabWidget extends StatefulWidget {
   final List<dynamic> cast;
   final List<dynamic> crew;
   final Movie movie;
+  final List<Map<String, dynamic>> videos;
 
   const MovieTabWidget({
     super.key,
     required this.cast,
     required this.crew,
     required this.movie,
+    required this.videos,
   });
 
   @override
@@ -556,7 +559,11 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                 cast: controller.cast,
                                 crew: controller.crew,
                                 movie: movie,
+                                videos: controller.videos,
                               ),
+                              const SizedBox(height: 32),
+                              // Videos Section
+                              _buildVideosSection(),
                               const SizedBox(height: 32),
                               // All Reviews Section
                               Row(
@@ -908,6 +915,120 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
               ],
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVideosSection() {
+    if (controller.videos.isEmpty) {
+      return const Center(
+        child: Text(
+          'No videos available',
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 14,
+          ),
+        ),
+      );
+    }
+
+    // Filter only YouTube trailers
+    final trailers = controller.videos.where((video) => 
+      video['site'] == 'YouTube' && 
+      video['type'] == 'Trailer'
+    ).toList();
+
+    if (trailers.isEmpty) {
+      return const Center(
+        child: Text(
+          'No trailers available',
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 14,
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Trailers',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (trailers.length > 1)
+              TextButton(
+                onPressed: () {
+                  Get.dialog(
+                    Dialog(
+                      backgroundColor: const Color(0xFF1F1D36),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'All Trailers',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.close, color: Colors.white),
+                                  onPressed: () => Get.back(),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Flexible(
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: trailers.map((video) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: MovieYoutubePlayer(
+                                      videoId: video['key'],
+                                      title: video['name'],
+                                    ),
+                                  )).toList(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                child: const Text(
+                  'See All',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF9C4FD6),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        MovieYoutubePlayer(
+          videoId: trailers.first['key'],
+          title: trailers.first['name'],
         ),
       ],
     );
