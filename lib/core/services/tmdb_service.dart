@@ -1160,6 +1160,21 @@ class TMDBService {
       },
     );
   }
+
+  static Future<List<Movie>> searchMoviesWithGenres(String query, List<int> genreIds) async {
+    if (query.isEmpty && genreIds.isEmpty) return [];
+
+    final genreParam = genreIds.isNotEmpty ? '&with_genres=${genreIds.join(',')}' : '';
+    final queryParam = query.isNotEmpty ? '&query=${Uri.encodeComponent(query)}' : '';
+
+    return _makeRequest<List<Movie>>(
+      endpoint: '/discover/movie?api_key=$_apiKey&language=en-US$genreParam$queryParam&page=1',
+      parser: (data) => (data['results'] as List)
+          .map((movie) => Movie.fromJson(movie))
+          .toList(),
+      useCache: false, // Don't cache search results
+    );
+  }
 }
 
 class _CacheEntry {

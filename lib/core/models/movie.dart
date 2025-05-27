@@ -10,6 +10,7 @@ class Movie {
   final int? voteCount;
   final String releaseDate;
   final List<String> genres;
+  final List<int> genreIds;
   final int? runtime;
   final double? userRating;
 
@@ -23,6 +24,7 @@ class Movie {
     this.voteCount,
     required this.releaseDate,
     this.genres = const [],
+    this.genreIds = const [],
     this.runtime,
     this.userRating,
   });
@@ -50,6 +52,11 @@ class Movie {
           .where((name) => name.isNotEmpty)
           .toList() ??
         [],
+      genreIds: (json['genre_ids'] as List?)
+          ?.map((id) => id is int ? id : int.tryParse(id.toString()) ?? 0)
+          .where((id) => id > 0)
+          .toList() ??
+        [],
       runtime: json['runtime'] is int ? json['runtime'] : int.tryParse(json['runtime']?.toString() ?? '0'),
       userRating: json['rating'] != null ? (json['rating'] as num).toDouble() : null,
     );
@@ -66,6 +73,7 @@ class Movie {
       'vote_count': voteCount,
       'release_date': releaseDate,
       'genres': genres,
+      'genre_ids': genreIds,
       'runtime': runtime,
       'user_rating': userRating,
     };

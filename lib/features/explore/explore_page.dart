@@ -104,236 +104,300 @@ class ExplorePage extends StatelessWidget {
           ),
         ),
       ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
-        if (controller.hasError.value) {
-          return Center(
-            child: Text(
-              controller.errorMessage.value,
-              style: const TextStyle(color: Colors.white),
-            ),
-          );
-        }
-
-        if (controller.searchQuery.isEmpty) {
-          return Column(
-            children: [
-              if (controller.searchHistory.isNotEmpty) ...[
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Recent Searches',
+      body: Column(
+        children: [
+          // Genre Filter Section
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Filter by Genre',
+                      style: GoogleFonts.openSans(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Obx(() => controller.selectedGenres.isNotEmpty
+                      ? TextButton(
+                          onPressed: controller.clearGenres,
+                          child: Text(
+                            'Clear All',
+                            style: GoogleFonts.openSans(
+                              color: Colors.grey[400],
+                              fontSize: 14,
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink(),)
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Obx(() => Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: controller.availableGenres.map((genre) {
+                    final isSelected = controller.selectedGenres.contains(genre);
+                    return FilterChip(
+                      label: Text(
+                        genre['name'],
                         style: GoogleFonts.openSans(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          color: isSelected ? Colors.white : Colors.grey[400],
+                          fontSize: 14,
                         ),
                       ),
-                      TextButton(
-                        onPressed: controller.clearHistory,
-                        child: Text(
-                          'Clear All',
-                          style: GoogleFonts.openSans(
-                            color: Colors.grey[400],
-                            fontSize: 14,
+                      selected: isSelected,
+                      onSelected: (selected) => controller.toggleGenre(genre),
+                      backgroundColor: const Color(0xFF3D3B54),
+                      selectedColor: const Color(0xFFE9A6A6),
+                      checkmarkColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    );
+                  }).toList(),
+                )),
+              ],
+            ),
+          ),
+          // Search Results Section
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              if (controller.hasError.value) {
+                return Center(
+                  child: Text(
+                    controller.errorMessage.value,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                );
+              }
+
+              if (controller.searchQuery.isEmpty && controller.selectedGenres.isEmpty) {
+                return Column(
+                  children: [
+                    if (controller.searchHistory.isNotEmpty) ...[
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Recent Searches',
+                              style: GoogleFonts.openSans(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: controller.clearHistory,
+                              child: Text(
+                                'Clear All',
+                                style: GoogleFonts.openSans(
+                                  color: Colors.grey[400],
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        itemCount: controller.searchHistory.length,
+                        itemBuilder: (context, index) {
+                          final query = controller.searchHistory[index];
+                          return ListTile(
+                            title: Text(
+                              query,
+                              style: GoogleFonts.openSans(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                            trailing: IconButton(
+                              icon: SvgPicture.asset(
+                                'assets/icons/close.svg',
+                                colorFilter: ColorFilter.mode(
+                                  Colors.grey[600]!,
+                                  BlendMode.srcIn,
+                                ),
+                                width: 20,
+                                height: 20,
+                              ),
+                              onPressed: () => controller.removeFromHistory(query),
+                            ),
+                            onTap: () {
+                              textController.text = query;
+                              controller.updateSearchQuery(query);
+                              controller.performSearch();
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                    if (controller.searchHistory.isEmpty)
+                      Expanded(
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SvgPicture.asset(
+                                'assets/icons/explore.svg',
+                                colorFilter: ColorFilter.mode(
+                                  Colors.grey[600]!,
+                                  BlendMode.srcIn,
+                                ),
+                                width: 48,
+                                height: 48,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Search for movies or select genres',
+                                style: GoogleFonts.openSans(
+                                  color: Colors.grey[600],
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
                           ),
+                        ),
+                      ),
+                  ],
+                );
+              }
+
+              if (controller.hasSearched.value && controller.searchResults.isEmpty) {
+                return Center(
+                  child: Text(
+                    'No results found${controller.searchQuery.isNotEmpty ? ' for "${controller.searchQuery.value}"' : ''}',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                );
+              }
+
+              if (!controller.hasSearched.value) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        'assets/icons/search.svg',
+                        colorFilter: ColorFilter.mode(
+                          Colors.grey[600]!,
+                          BlendMode.srcIn,
+                        ),
+                        width: 48,
+                        height: 48,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Start typing to search movies or select genres',
+                        style: GoogleFonts.openSans(
+                          color: Colors.grey[600],
+                          fontSize: 16,
                         ),
                       ),
                     ],
                   ),
-                ),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  itemCount: controller.searchHistory.length,
-                  itemBuilder: (context, index) {
-                    final query = controller.searchHistory[index];
-                    return ListTile(
-                      title: Text(
-                        query,
-                        style: GoogleFonts.openSans(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                      ),
-                      trailing: IconButton(
-                        icon: SvgPicture.asset(
-                          'assets/icons/close.svg',
-                          colorFilter: ColorFilter.mode(
-                            Colors.grey[600]!,
-                            BlendMode.srcIn,
-                          ),
-                          width: 20,
-                          height: 20,
-                        ),
-                        onPressed: () => controller.removeFromHistory(query),
-                      ),
-                      onTap: () {
-                        textController.text = query;
-                        controller.updateSearchQuery(query);
-                        controller.performSearch();
-                      },
-                    );
-                  },
-                ),
-              ],
-              if (controller.searchHistory.isEmpty)
-                Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SvgPicture.asset(
-                          'assets/icons/explore.svg',
-                          colorFilter: ColorFilter.mode(
-                            Colors.grey[600]!,
-                            BlendMode.srcIn,
-                          ),
-                          width: 48,
-                          height: 48,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Search for movies',
-                          style: GoogleFonts.openSans(
-                            color: Colors.grey[600],
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          );
-        }
+                );
+              }
 
-        if (controller.hasSearched.value && controller.searchResults.isEmpty) {
-          return Center(
-            child: Text(
-              'No results found for "${controller.searchQuery.value}"',
-              style: const TextStyle(color: Colors.white),
-            ),
-          );
-        }
-
-        if (!controller.hasSearched.value) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SvgPicture.asset(
-                  'assets/icons/search.svg',
-                  colorFilter: ColorFilter.mode(
-                    Colors.grey[600]!,
-                    BlendMode.srcIn,
-                  ),
-                  width: 48,
-                  height: 48,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Start typing to search movies',
-                  style: GoogleFonts.openSans(
-                    color: Colors.grey[600],
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: controller.searchResults.length,
-          itemBuilder: (context, index) {
-            final movie = controller.searchResults[index];
-            return GestureDetector(
-              onTap: () {
-                Get.toNamed(AppRoutes.movieDetailPath(movie.id.toString()));
-              },
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: CachedNetworkImage(
-                        imageUrl: movie.posterUrl,
-                        width: 100,
-                        height: 150,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          color: Colors.grey[900],
-                          child: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: Colors.grey[900],
-                          child: const Icon(
-                            Icons.error_outline,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: controller.searchResults.length,
+                itemBuilder: (context, index) {
+                  final movie = controller.searchResults[index];
+                  return GestureDetector(
+                    onTap: () {
+                      Get.toNamed(AppRoutes.movieDetailPath(movie.id.toString()));
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            movie.title,
-                            style: GoogleFonts.openSans(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CachedNetworkImage(
+                              imageUrl: movie.posterUrl,
+                              width: 100,
+                              height: 150,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                color: Colors.grey[900],
+                                child: const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                color: Colors.grey[900],
+                                child: const Icon(
+                                  Icons.error_outline,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                           ),
-                          if (movie.releaseDate.isNotEmpty) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              movie.releaseDate.split('-')[0],
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 14,
-                              ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  movie.title,
+                                  style: GoogleFonts.openSans(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                if (movie.releaseDate.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    movie.releaseDate.split('-')[0],
+                                    style: TextStyle(
+                                      color: Colors.grey[400],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                                if (movie.overview.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    movie.overview,
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Colors.grey[400],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
-                          ],
-                          if (movie.overview.isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              movie.overview,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
+                          ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      }),
+                  );
+                },
+              );
+            }),
+          ),
+        ],
+      ),
       bottomNavigationBar: const CustomBottomNav(currentIndex: 1),
     );
   }

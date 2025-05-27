@@ -13,6 +13,8 @@ class ExploreController extends GetxController {
   final RxString errorMessage = ''.obs;
   final RxBool hasSearched = false.obs;
   final RxList<String> searchHistory = <String>[].obs;
+  final RxList<Map<String, dynamic>> selectedGenres = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> availableGenres = <Map<String, dynamic>>[].obs;
   
   Timer? _debounce;
   static const String _searchHistoryKey = 'search_history';
@@ -22,11 +24,21 @@ class ExploreController extends GetxController {
   void onInit() {
     super.onInit();
     _initPrefs();
+    _loadGenres();
   }
 
   Future<void> _initPrefs() async {
     _prefs = await SharedPreferences.getInstance();
     loadSearchHistory();
+  }
+
+  Future<void> _loadGenres() async {
+    try {
+      final genres = await TMDBService.getMovieGenres();
+      availableGenres.value = genres;
+    } catch (e) {
+      print('Error loading genres: $e');
+    }
   }
 
   @override
@@ -97,19 +109,60 @@ class ExploreController extends GetxController {
     errorMessage.value = '';
   }
 
+  void toggleGenre(Map<String, dynamic> genre) {
+    if (selectedGenres.contains(genre)) {
+      selectedGenres.remove(genre);
+    } else {
+      selectedGenres.add(genre);
+    }
+    performSearch();
+  }
+
+  void clearGenres() {
+    selectedGenres.clear();
+    performSearch();
+  }
+
   Future<void> performSearch() async {
-    if (searchQuery.value.isEmpty) return;
+    if (searchQuery.value.isEmpty && selectedGenres.isEmpty) return;
     
     try {
       isLoading.value = true;
       hasError.value = false;
       hasSearched.value = true;
       
-      final results = await TMDBService.searchMovies(searchQuery.value);
+      List<Movie> results = [];
+      
+      if (searchQuery.value.isNotEmpty) {
+        // If there's a search query, use the search endpoint
+        results = await TMDBService.searchMovies(searchQuery.value);
+        
+        // If genres are selected, filter the results
+        if (selectedGenres.isNotEmpty) {
+          final genreIds = selectedGenres.map((g) => g['id'] as int).toList();
+          results = results.where((movie) {
+            return movie.genreIds.any((id) => genreIds.contains(id));
+          }).toList();
+        }
+      } else if (selectedGenres.isNotEmpty) {
+        // If only genres are selected, use discover endpoint
+        final genreIds = selectedGenres.map((g) => g['id'] as int).toList();
+        results = await TMDBService.discoverMoviesByGenre(genreIds.first);
+        
+        // If multiple genres are selected, filter the results
+        if (genreIds.length > 1) {
+          results = results.where((movie) {
+            return movie.genreIds.any((id) => genreIds.contains(id));
+          }).toList();
+        }
+      }
+      
       searchResults.value = results;
       
-      // Add to history after successful search
-      addToHistory(searchQuery.value);
+      // Add to history after successful search if there was a query
+      if (searchQuery.value.isNotEmpty) {
+        addToHistory(searchQuery.value);
+      }
     } catch (e) {
       hasError.value = true;
       errorMessage.value = 'Failed to search movies: ${e.toString()}';
