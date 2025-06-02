@@ -11,6 +11,74 @@ import 'package:letterboxd/core/models/movie.dart';
 class ExplorePage extends StatelessWidget {
   const ExplorePage({super.key});
 
+  void _showFilterBottomSheet(BuildContext context, ExploreController controller) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F1D36),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Filter by Genre',
+                  style: GoogleFonts.openSans(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Obx(() => controller.selectedGenres.isNotEmpty
+                  ? TextButton(
+                      onPressed: controller.clearGenres,
+                      child: Text(
+                        'Clear All',
+                        style: GoogleFonts.openSans(
+                          color: Colors.grey[400],
+                          fontSize: 14,
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Obx(() => Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: controller.availableGenres.map((genre) {
+                final isSelected = controller.selectedGenres.contains(genre);
+                return FilterChip(
+                  label: Text(
+                    genre['name'],
+                    style: GoogleFonts.openSans(
+                      color: isSelected ? Colors.white : Colors.grey[400],
+                      fontSize: 14,
+                    ),
+                  ),
+                  selected: isSelected,
+                  onSelected: (selected) => controller.toggleGenre(genre),
+                  backgroundColor: const Color(0xFF3D3B54),
+                  selectedColor: const Color(0xFFE9A6A6),
+                  checkmarkColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                );
+              }).toList(),
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(ExploreController());
@@ -100,68 +168,56 @@ class ExplorePage extends StatelessWidget {
                   ),
                 ),
               ),
+              // Filter button
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => _showFilterBottomSheet(context, controller),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: SvgPicture.asset(
+                      'assets/icons/filter.svg',
+                      colorFilter: ColorFilter.mode(
+                        Colors.white.withOpacity(0.5),
+                        BlendMode.srcIn,
+                      ),
+                      width: 20,
+                      height: 20,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
       ),
       body: Column(
         children: [
-          // Genre Filter Section
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Filter by Genre',
-                      style: GoogleFonts.openSans(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Obx(() => controller.selectedGenres.isNotEmpty
-                      ? TextButton(
-                          onPressed: controller.clearGenres,
-                          child: Text(
-                            'Clear All',
-                            style: GoogleFonts.openSans(
-                              color: Colors.grey[400],
-                              fontSize: 14,
-                            ),
-                          ),
-                        )
-                      : const SizedBox.shrink(),)
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Obx(() => Wrap(
+          // Selected Genres Display
+          Obx(() => controller.selectedGenres.isNotEmpty
+            ? Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: controller.availableGenres.map((genre) {
-                    final isSelected = controller.selectedGenres.contains(genre);
-                    return FilterChip(
+                  children: controller.selectedGenres.map((genre) {
+                    return Chip(
                       label: Text(
                         genre['name'],
                         style: GoogleFonts.openSans(
-                          color: isSelected ? Colors.white : Colors.grey[400],
+                          color: Colors.white,
                           fontSize: 14,
                         ),
                       ),
-                      selected: isSelected,
-                      onSelected: (selected) => controller.toggleGenre(genre),
-                      backgroundColor: const Color(0xFF3D3B54),
-                      selectedColor: const Color(0xFFE9A6A6),
-                      checkmarkColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      backgroundColor: const Color(0xFFE9A6A6),
+                      deleteIcon: const Icon(Icons.close, size: 18, color: Colors.white),
+                      onDeleted: () => controller.toggleGenre(genre),
                     );
                   }).toList(),
-                )),
-              ],
-            ),
+                ),
+              )
+            : const SizedBox.shrink(),
           ),
           // Search Results Section
           Expanded(
