@@ -206,12 +206,12 @@ class ExplorePage extends StatelessWidget {
                       label: Text(
                         genre['name'],
                         style: GoogleFonts.openSans(
-                          color: Colors.white,
+                          color: const Color(0xFF1F1D36),
                           fontSize: 14,
                         ),
                       ),
                       backgroundColor: const Color(0xFFE9A6A6),
-                      deleteIcon: const Icon(Icons.close, size: 18, color: Colors.white),
+                      deleteIcon: const Icon(Icons.close, size: 18, color: Color(0xFF1F1D36)),
                       onDeleted: () => controller.toggleGenre(genre),
                     );
                   }).toList(),
