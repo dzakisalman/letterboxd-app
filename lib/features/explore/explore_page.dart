@@ -60,7 +60,7 @@ class ExplorePage extends StatelessWidget {
                   label: Text(
                     genre['name'],
                     style: GoogleFonts.openSans(
-                      color: isSelected ? Colors.white : Colors.grey[400],
+                      color: isSelected ? const Color(0xFF1F1D36) : Colors.grey[400],
                       fontSize: 14,
                     ),
                   ),
@@ -68,7 +68,7 @@ class ExplorePage extends StatelessWidget {
                   onSelected: (selected) => controller.toggleGenre(genre),
                   backgroundColor: const Color(0xFF3D3B54),
                   selectedColor: const Color(0xFFE9A6A6),
-                  checkmarkColor: Colors.white,
+                  checkmarkColor: const Color(0xFF1F1D36),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 );
               }).toList(),
