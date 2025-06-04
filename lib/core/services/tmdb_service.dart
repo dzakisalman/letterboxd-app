@@ -416,6 +416,20 @@ class TMDBService {
     }
   }
 
+  static Future<List<Movie>> discoverMoviesByGenres(List<int> genreIds, {int page = 1}) async {
+    if (genreIds.isEmpty) return [];
+
+    final genreParam = genreIds.join(',');
+
+    return _makeRequest<List<Movie>>(
+      endpoint: '/discover/movie?api_key=$_apiKey&language=en-US&with_genres=$genreParam&page=$page',
+      parser: (data) => (data['results'] as List)
+          .map((movie) => Movie.fromJson(movie))
+          .toList(),
+      useCache: false, // Don't cache discover results with multiple genres
+    );
+  }
+
   static Future<List<Map<String, dynamic>>> getPopularCollections() async {
     print('[TMDB API] Getting popular movies...');
     return _makeRequest<List<Map<String, dynamic>>>(

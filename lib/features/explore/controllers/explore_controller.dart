@@ -145,16 +145,11 @@ class ExploreController extends GetxController {
           }).toList();
         }
       } else if (selectedGenres.isNotEmpty) {
-        // If only genres are selected, use discover endpoint
+        // If only genres are selected, use discover endpoint with multiple genres
         final genreIds = selectedGenres.map((g) => g['id'] as int).toList();
-        results = await TMDBService.discoverMoviesByGenre(genreIds.first);
         
-        // If multiple genres are selected, filter the results
-        if (genreIds.length > 1) {
-          results = results.where((movie) {
-            return movie.genreIds.any((id) => genreIds.contains(id));
-          }).toList();
-        }
+        // Use the new public method for multiple genres
+        results = await TMDBService.discoverMoviesByGenres(genreIds);
       }
       
       searchResults.value = results;
