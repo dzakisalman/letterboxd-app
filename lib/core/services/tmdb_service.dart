@@ -1189,6 +1189,29 @@ class TMDBService {
       useCache: false, // Don't cache search results
     );
   }
+
+  static Future<List<Movie>> discoverMovies({
+    List<int>? genreIds,
+    List<int>? years,
+    int page = 1,
+  }) async {
+    if (genreIds == null && years == null) return [];
+
+    final genreParam = genreIds?.isNotEmpty == true 
+        ? '&with_genres=${genreIds?.join(',')}' 
+        : '';
+    final yearParams = years?.isNotEmpty == true 
+        ? years?.map((year) => '&primary_release_year=$year').join('')
+        : '';
+
+    return _makeRequest<List<Movie>>(
+      endpoint: '/discover/movie?api_key=$_apiKey&language=en-US$genreParam$yearParams&page=$page',
+      parser: (data) => (data['results'] as List)
+          .map((movie) => Movie.fromJson(movie))
+          .toList(),
+      useCache: false, // Don't cache discover results
+    );
+  }
 }
 
 class _CacheEntry {

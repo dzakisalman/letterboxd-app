@@ -20,60 +20,116 @@ class ExplorePage extends StatelessWidget {
       ),
       builder: (context) => Container(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Filter by Genre',
-                  style: GoogleFonts.openSans(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Obx(() => controller.selectedGenres.isNotEmpty
-                  ? TextButton(
-                      onPressed: controller.clearGenres,
-                      child: Text(
-                        'Clear All',
-                        style: GoogleFonts.openSans(
-                          color: Colors.grey[400],
-                          fontSize: 14,
-                        ),
-                      ),
-                    )
-                  : const SizedBox.shrink(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Obx(() => Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: controller.availableGenres.map((genre) {
-                final isSelected = controller.selectedGenres.contains(genre);
-                return FilterChip(
-                  label: Text(
-                    genre['name'],
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Genre Filter Section
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Filter by Genre',
                     style: GoogleFonts.openSans(
-                      color: isSelected ? const Color(0xFF1F1D36) : Colors.grey[400],
-                      fontSize: 14,
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  selected: isSelected,
-                  onSelected: (selected) => controller.toggleGenre(genre),
-                  backgroundColor: const Color(0xFF3D3B54),
-                  selectedColor: const Color(0xFFE9A6A6),
-                  checkmarkColor: const Color(0xFF1F1D36),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                );
-              }).toList(),
-            )),
-          ],
+                  Obx(() => controller.selectedGenres.isNotEmpty
+                    ? TextButton(
+                        onPressed: controller.clearGenres,
+                        child: Text(
+                          'Clear All',
+                          style: GoogleFonts.openSans(
+                            color: Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Obx(() => Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: controller.availableGenres.map((genre) {
+                  final isSelected = controller.selectedGenres.contains(genre);
+                  return FilterChip(
+                    label: Text(
+                      genre['name'],
+                      style: GoogleFonts.openSans(
+                        color: isSelected ? const Color(0xFF1F1D36) : Colors.grey[400],
+                        fontSize: 14,
+                      ),
+                    ),
+                    selected: isSelected,
+                    onSelected: (selected) => controller.toggleGenre(genre),
+                    backgroundColor: const Color(0xFF3D3B54),
+                    selectedColor: const Color(0xFFE9A6A6),
+                    checkmarkColor: const Color(0xFF1F1D36),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  );
+                }).toList(),
+              )),
+              
+              const SizedBox(height: 24),
+              
+              // Year Filter Section
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Filter by Year',
+                    style: GoogleFonts.openSans(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Obx(() => controller.selectedYears.isNotEmpty
+                    ? TextButton(
+                        onPressed: controller.clearYears,
+                        child: Text(
+                          'Clear All',
+                          style: GoogleFonts.openSans(
+                            color: Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Obx(() => Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: controller.availableYears.map((year) {
+                  final isSelected = controller.selectedYears.contains(year);
+                  return FilterChip(
+                    label: Text(
+                      year.toString(),
+                      style: GoogleFonts.openSans(
+                        color: isSelected ? const Color(0xFF1F1D36) : Colors.grey[400],
+                        fontSize: 14,
+                      ),
+                    ),
+                    selected: isSelected,
+                    onSelected: (selected) => controller.toggleYear(year),
+                    backgroundColor: const Color(0xFF3D3B54),
+                    selectedColor: const Color(0xFFE9A6A6),
+                    checkmarkColor: const Color(0xFF1F1D36),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  );
+                }).toList(),
+              )),
+            ],
+          ),
         ),
       ),
     );
@@ -213,6 +269,31 @@ class ExplorePage extends StatelessWidget {
                       backgroundColor: const Color(0xFFE9A6A6),
                       deleteIcon: const Icon(Icons.close, size: 18, color: Color(0xFF1F1D36)),
                       onDeleted: () => controller.toggleGenre(genre),
+                    );
+                  }).toList(),
+                ),
+              )
+            : const SizedBox.shrink(),
+          ),
+          // Selected Years Display
+          Obx(() => controller.selectedYears.isNotEmpty
+            ? Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: controller.selectedYears.map((year) {
+                    return Chip(
+                      label: Text(
+                        year.toString(),
+                        style: GoogleFonts.openSans(
+                          color: const Color(0xFF1F1D36),
+                          fontSize: 14,
+                        ),
+                      ),
+                      backgroundColor: const Color(0xFFE9A6A6),
+                      deleteIcon: const Icon(Icons.close, size: 18, color: Color(0xFF1F1D36)),
+                      onDeleted: () => controller.toggleYear(year),
                     );
                   }).toList(),
                 ),

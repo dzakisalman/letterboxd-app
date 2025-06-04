@@ -15,6 +15,8 @@ class ExploreController extends GetxController {
   final RxList<String> searchHistory = <String>[].obs;
   final RxList<Map<String, dynamic>> selectedGenres = <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> availableGenres = <Map<String, dynamic>>[].obs;
+  final RxList<int> selectedYears = <int>[].obs;
+  final RxList<int> availableYears = <int>[].obs;
   
   Timer? _debounce;
   static const String _searchHistoryKey = 'search_history';
@@ -25,6 +27,16 @@ class ExploreController extends GetxController {
     super.onInit();
     _initPrefs();
     _loadGenres();
+    _initializeYears();
+  }
+
+  void _initializeYears() {
+    // Generate years from current year down to 1900
+    final currentYear = DateTime.now().year;
+    availableYears.value = List.generate(
+      currentYear - 1899,
+      (index) => currentYear - index,
+    );
   }
 
   Future<void> _initPrefs() async {
@@ -123,8 +135,22 @@ class ExploreController extends GetxController {
     performSearch();
   }
 
+  void toggleYear(int year) {
+    if (selectedYears.contains(year)) {
+      selectedYears.remove(year);
+    } else {
+      selectedYears.add(year);
+    }
+    performSearch();
+  }
+
+  void clearYears() {
+    selectedYears.clear();
+    performSearch();
+  }
+
   Future<void> performSearch() async {
-    if (searchQuery.value.isEmpty && selectedGenres.isEmpty) return;
+    if (searchQuery.value.isEmpty && selectedGenres.isEmpty && selectedYears.isEmpty) return;
     
     try {
       isLoading.value = true;
@@ -144,12 +170,25 @@ class ExploreController extends GetxController {
             return movie.genreIds.any((id) => genreIds.contains(id));
           }).toList();
         }
-      } else if (selectedGenres.isNotEmpty) {
-        // If only genres are selected, use discover endpoint with multiple genres
+
+        // If years are selected, filter the results
+        if (selectedYears.isNotEmpty) {
+          results = results.where((movie) {
+            if (movie.releaseDate.isEmpty) return false;
+            final movieYear = int.tryParse(movie.releaseDate.split('-')[0]);
+            return movieYear != null && selectedYears.contains(movieYear);
+          }).toList();
+        }
+      } else if (selectedGenres.isNotEmpty || selectedYears.isNotEmpty) {
+        // If only filters are selected, use discover endpoint
         final genreIds = selectedGenres.map((g) => g['id'] as int).toList();
+        final years = selectedYears.toList();
         
-        // Use the new public method for multiple genres
-        results = await TMDBService.discoverMoviesByGenres(genreIds);
+        // Use the discover endpoint with filters
+        results = await TMDBService.discoverMovies(
+          genreIds: genreIds,
+          years: years,
+        );
       }
       
       searchResults.value = results;
