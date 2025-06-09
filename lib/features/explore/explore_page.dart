@@ -26,108 +26,178 @@ class ExplorePage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Genre Filter Section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Filter by Genre',
-                    style: GoogleFonts.openSans(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+              ExpansionTile(
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Filter by Genre',
+                      style: GoogleFonts.openSans(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  Obx(() => controller.selectedGenres.isNotEmpty
-                    ? TextButton(
-                        onPressed: controller.clearGenres,
-                        child: Text(
-                          'Clear All',
+                    Obx(() => controller.selectedGenres.isNotEmpty
+                      ? TextButton(
+                          onPressed: controller.clearGenres,
+                          child: Text(
+                            'Clear All',
+                            style: GoogleFonts.openSans(
+                              color: Colors.grey[400],
+                              fontSize: 14,
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
+                iconColor: Colors.white,
+                collapsedIconColor: Colors.white,
+                shape: const Border(),
+                collapsedShape: const Border(),
+                children: [
+                  Obx(() => Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: controller.availableGenres.map((genre) {
+                      final isSelected = controller.selectedGenres.contains(genre);
+                      return FilterChip(
+                        label: Text(
+                          genre['name'],
                           style: GoogleFonts.openSans(
-                            color: Colors.grey[400],
+                            color: isSelected ? const Color(0xFF1F1D36) : Colors.grey[400],
                             fontSize: 14,
                           ),
                         ),
-                      )
-                    : const SizedBox.shrink(),
-                  ),
+                        selected: isSelected,
+                        onSelected: (selected) => controller.toggleGenre(genre),
+                        backgroundColor: const Color(0xFF3D3B54),
+                        selectedColor: const Color(0xFFE9A6A6),
+                        checkmarkColor: const Color(0xFF1F1D36),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      );
+                    }).toList(),
+                  )),
                 ],
               ),
-              const SizedBox(height: 16),
-              Obx(() => Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: controller.availableGenres.map((genre) {
-                  final isSelected = controller.selectedGenres.contains(genre);
-                  return FilterChip(
-                    label: Text(
-                      genre['name'],
-                      style: GoogleFonts.openSans(
-                        color: isSelected ? const Color(0xFF1F1D36) : Colors.grey[400],
-                        fontSize: 14,
-                      ),
-                    ),
-                    selected: isSelected,
-                    onSelected: (selected) => controller.toggleGenre(genre),
-                    backgroundColor: const Color(0xFF3D3B54),
-                    selectedColor: const Color(0xFFE9A6A6),
-                    checkmarkColor: const Color(0xFF1F1D36),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  );
-                }).toList(),
-              )),
               
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               
               // Year Filter Section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Filter by Year',
-                    style: GoogleFonts.openSans(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+              ExpansionTile(
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Filter by Year',
+                      style: GoogleFonts.openSans(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  Obx(() => controller.selectedYears.isNotEmpty
-                    ? TextButton(
-                        onPressed: controller.clearYears,
-                        child: Text(
-                          'Clear All',
+                    Obx(() => controller.selectedYears.isNotEmpty
+                      ? TextButton(
+                          onPressed: controller.clearYears,
+                          child: Text(
+                            'Clear All',
+                            style: GoogleFonts.openSans(
+                              color: Colors.grey[400],
+                              fontSize: 14,
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
+                iconColor: Colors.white,
+                collapsedIconColor: Colors.white,
+                shape: const Border(),
+                collapsedShape: const Border(),
+                children: [
+                  Obx(() => Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: controller.availableYears.map((year) {
+                      final isSelected = controller.selectedYears.contains(year);
+                      return FilterChip(
+                        label: Text(
+                          year.toString(),
                           style: GoogleFonts.openSans(
-                            color: Colors.grey[400],
+                            color: isSelected ? const Color(0xFF1F1D36) : Colors.grey[400],
                             fontSize: 14,
                           ),
                         ),
-                      )
-                    : const SizedBox.shrink(),
-                  ),
+                        selected: isSelected,
+                        onSelected: (selected) => controller.toggleYear(year),
+                        backgroundColor: const Color(0xFF3D3B54),
+                        selectedColor: const Color(0xFFE9A6A6),
+                        checkmarkColor: const Color(0xFF1F1D36),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      );
+                    }).toList(),
+                  )),
                 ],
               ),
+              
               const SizedBox(height: 16),
-              Obx(() => Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: controller.availableYears.map((year) {
-                  final isSelected = controller.selectedYears.contains(year);
-                  return FilterChip(
-                    label: Text(
-                      year.toString(),
-                      style: GoogleFonts.openSans(
-                        color: isSelected ? const Color(0xFF1F1D36) : Colors.grey[400],
-                        fontSize: 14,
+              
+              // Sort by Rating Section
+              ExpansionTile(
+                title: Text(
+                  'Sort by Rating',
+                  style: GoogleFonts.openSans(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                iconColor: Colors.white,
+                collapsedIconColor: Colors.white,
+                shape: const Border(),
+                collapsedShape: const Border(),
+                children: [
+                  Obx(() => Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      FilterChip(
+                        label: Text(
+                          'Highest Rating',
+                          style: GoogleFonts.openSans(
+                            color: controller.sortBy.value == 'highest' ? const Color(0xFF1F1D36) : Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                        ),
+                        selected: controller.sortBy.value == 'highest',
+                        onSelected: (selected) => controller.setSortBy('highest'),
+                        backgroundColor: const Color(0xFF3D3B54),
+                        selectedColor: const Color(0xFFE9A6A6),
+                        checkmarkColor: const Color(0xFF1F1D36),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
-                    ),
-                    selected: isSelected,
-                    onSelected: (selected) => controller.toggleYear(year),
-                    backgroundColor: const Color(0xFF3D3B54),
-                    selectedColor: const Color(0xFFE9A6A6),
-                    checkmarkColor: const Color(0xFF1F1D36),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  );
-                }).toList(),
-              )),
+                      FilterChip(
+                        label: Text(
+                          'Lowest Rating',
+                          style: GoogleFonts.openSans(
+                            color: controller.sortBy.value == 'lowest' ? const Color(0xFF1F1D36) : Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                        ),
+                        selected: controller.sortBy.value == 'lowest',
+                        onSelected: (selected) => controller.setSortBy('lowest'),
+                        backgroundColor: const Color(0xFF3D3B54),
+                        selectedColor: const Color(0xFFE9A6A6),
+                        checkmarkColor: const Color(0xFF1F1D36),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                    ],
+                  )),
+                ],
+              ),
             ],
           ),
         ),
@@ -296,6 +366,31 @@ class ExplorePage extends StatelessWidget {
                       onDeleted: () => controller.toggleYear(year),
                     );
                   }).toList(),
+                ),
+              )
+            : const SizedBox.shrink(),
+          ),
+          // Selected Sort Display
+          Obx(() => controller.sortBy.value.isNotEmpty
+            ? Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    Chip(
+                      label: Text(
+                        controller.sortBy.value == 'highest' ? 'Highest Rating' : 'Lowest Rating',
+                        style: GoogleFonts.openSans(
+                          color: const Color(0xFF1F1D36),
+                          fontSize: 14,
+                        ),
+                      ),
+                      backgroundColor: const Color(0xFFE9A6A6),
+                      deleteIcon: const Icon(Icons.close, size: 18, color: Color(0xFF1F1D36)),
+                      onDeleted: () => controller.setSortBy(''),
+                    ),
+                  ],
                 ),
               )
             : const SizedBox.shrink(),

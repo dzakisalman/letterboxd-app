@@ -17,6 +17,7 @@ class ExploreController extends GetxController {
   final RxList<Map<String, dynamic>> availableGenres = <Map<String, dynamic>>[].obs;
   final RxList<int> selectedYears = <int>[].obs;
   final RxList<int> availableYears = <int>[].obs;
+  final RxString sortBy = ''.obs;
   
   Timer? _debounce;
   static const String _searchHistoryKey = 'search_history';
@@ -49,7 +50,11 @@ class ExploreController extends GetxController {
       final genres = await TMDBService.getMovieGenres();
       availableGenres.value = genres;
     } catch (e) {
-      print('Error loading genres: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to load genres: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
@@ -149,6 +154,29 @@ class ExploreController extends GetxController {
     performSearch();
   }
 
+  void setSortBy(String sort) {
+    sortBy.value = sort;
+    _sortResults();
+  }
+
+  void _sortResults() {
+    if (sortBy.value.isEmpty) return;
+    
+    if (sortBy.value == 'highest') {
+      searchResults.sort((a, b) {
+        final ratingA = a.voteAverage ?? 0.0;
+        final ratingB = b.voteAverage ?? 0.0;
+        return ratingB.compareTo(ratingA);
+      });
+    } else if (sortBy.value == 'lowest') {
+      searchResults.sort((a, b) {
+        final ratingA = a.voteAverage ?? 0.0;
+        final ratingB = b.voteAverage ?? 0.0;
+        return ratingA.compareTo(ratingB);
+      });
+    }
+  }
+
   Future<void> performSearch() async {
     if (searchQuery.value.isEmpty && selectedGenres.isEmpty && selectedYears.isEmpty) return;
     
@@ -192,6 +220,11 @@ class ExploreController extends GetxController {
       }
       
       searchResults.value = results;
+      
+      // Apply sorting if sortBy is set
+      if (sortBy.value.isNotEmpty) {
+        _sortResults();
+      }
       
       // Add to history after successful search if there was a query
       if (searchQuery.value.isNotEmpty) {
