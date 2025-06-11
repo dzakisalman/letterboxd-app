@@ -198,6 +198,62 @@ class ExplorePage extends StatelessWidget {
                   )),
                 ],
               ),
+
+              const SizedBox(height: 16),
+              
+              // Sort by Release Date Section
+              ExpansionTile(
+                title: Text(
+                  'Sort by Release Date',
+                  style: GoogleFonts.openSans(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                iconColor: Colors.white,
+                collapsedIconColor: Colors.white,
+                shape: const Border(),
+                collapsedShape: const Border(),
+                children: [
+                  Obx(() => Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      FilterChip(
+                        label: Text(
+                          'Newest First',
+                          style: GoogleFonts.openSans(
+                            color: controller.sortBy.value == 'newest' ? const Color(0xFF1F1D36) : Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                        ),
+                        selected: controller.sortBy.value == 'newest',
+                        onSelected: (selected) => controller.setSortBy('newest'),
+                        backgroundColor: const Color(0xFF3D3B54),
+                        selectedColor: const Color(0xFFE9A6A6),
+                        checkmarkColor: const Color(0xFF1F1D36),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      FilterChip(
+                        label: Text(
+                          'Oldest First',
+                          style: GoogleFonts.openSans(
+                            color: controller.sortBy.value == 'oldest' ? const Color(0xFF1F1D36) : Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                        ),
+                        selected: controller.sortBy.value == 'oldest',
+                        onSelected: (selected) => controller.setSortBy('oldest'),
+                        backgroundColor: const Color(0xFF3D3B54),
+                        selectedColor: const Color(0xFFE9A6A6),
+                        checkmarkColor: const Color(0xFF1F1D36),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                    ],
+                  )),
+                ],
+              ),
             ],
           ),
         ),

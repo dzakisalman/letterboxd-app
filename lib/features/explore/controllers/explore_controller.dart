@@ -174,6 +174,18 @@ class ExploreController extends GetxController {
         final ratingB = b.voteAverage ?? 0.0;
         return ratingA.compareTo(ratingB);
       });
+    } else if (sortBy.value == 'newest') {
+      searchResults.sort((a, b) {
+        if (a.releaseDate.isEmpty) return 1;
+        if (b.releaseDate.isEmpty) return -1;
+        return b.releaseDate.compareTo(a.releaseDate);
+      });
+    } else if (sortBy.value == 'oldest') {
+      searchResults.sort((a, b) {
+        if (a.releaseDate.isEmpty) return 1;
+        if (b.releaseDate.isEmpty) return -1;
+        return a.releaseDate.compareTo(b.releaseDate);
+      });
     }
   }
 
