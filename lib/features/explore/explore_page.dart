@@ -19,69 +19,225 @@ class ExplorePage extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
+      isScrollControlled: true, // Allow the bottom sheet to be larger
+      builder: (context) => DefaultTabController(
+        length: 4, // Number of tabs
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.75, // 75% of screen height
         padding: const EdgeInsets.all(20),
-        child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
             children: [
-              // Genre Filter Section
-              FilterSection<Map<String, dynamic>>(
-                title: 'Filter by Genre',
-                items: controller.availableGenres,
-                selectedItems: controller.selectedGenres,
-                onToggle: controller.toggleGenre,
-                onClear: controller.clearGenres,
-                itemLabelBuilder: (genre) => genre['name'],
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // Year Filter Section
-              FilterSection<int>(
-                title: 'Filter by Year',
-                items: controller.availableYears,
-                selectedItems: controller.selectedYears,
-                onToggle: controller.toggleYear,
-                onClear: controller.clearYears,
-                itemLabelBuilder: (year) => year.toString(),
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // Sort by Rating Section
-              FilterSection<Map<String, String>>(
-                title: 'Sort by Rating',
-                items: const [
-                  {'value': 'highest', 'label': 'Highest Rating'},
-                  {'value': 'lowest', 'label': 'Lowest Rating'},
+              // Tab Bar
+              TabBar(
+                isScrollable: false,
+                labelColor: const Color(0xFFE9A6A6),
+                unselectedLabelColor: Colors.white.withOpacity(0.5),
+                indicatorColor: const Color(0xFFE9A6A6),
+                labelStyle: GoogleFonts.openSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+                unselectedLabelStyle: GoogleFonts.openSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                ),
+                labelPadding: EdgeInsets.zero,
+                indicatorSize: TabBarIndicatorSize.label,
+                tabs: const [
+                  Tab(text: 'Genres'),
+                  Tab(text: 'Years'),
+                  Tab(text: 'Rating'),
+                  Tab(text: 'Release'),
                 ],
-                selectedItems: controller.sortBy.value.isNotEmpty 
-                    ? [{'value': controller.sortBy.value, 'label': controller.sortBy.value == 'highest' ? 'Highest Rating' : 'Lowest Rating'}]
-                    : [],
-                onToggle: (item) => controller.setSortBy(item['value']!),
-                onClear: () => controller.setSortBy(''),
-                itemLabelBuilder: (item) => item['label']!,
-                isSingleSelect: true,
               ),
-              
+              const SizedBox(height: 20),
+              // Tab Bar View
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    // Genres Tab
+                    SingleChildScrollView(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: controller.availableGenres.map((genre) {
+                          return Obx(() {
+                            final isSelected = controller.selectedGenres.contains(genre);
+                            return FilterChip(
+                              label: Text(
+                                genre['name'],
+                                style: GoogleFonts.openSans(
+                                  color: isSelected ? const Color(0xFF1F1D36) : Colors.white,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              selected: isSelected,
+                              onSelected: (_) => controller.toggleGenre(genre),
+                              backgroundColor: const Color(0xFF3D3B54),
+                              selectedColor: const Color(0xFFE9A6A6),
+                              checkmarkColor: const Color(0xFF1F1D36),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            );
+                          });
+                        }).toList(),
+                      ),
+                    ),
+                    // Years Tab
+                    SingleChildScrollView(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: controller.availableYears.map((year) {
+                          return Obx(() {
+                            final isSelected = controller.selectedYears.contains(year);
+                            return FilterChip(
+                              label: Text(
+                                year.toString(),
+                                style: GoogleFonts.openSans(
+                                  color: isSelected ? const Color(0xFF1F1D36) : Colors.white,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              selected: isSelected,
+                              onSelected: (_) => controller.toggleYear(year),
+                              backgroundColor: const Color(0xFF3D3B54),
+                              selectedColor: const Color(0xFFE9A6A6),
+                              checkmarkColor: const Color(0xFF1F1D36),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            );
+                          });
+                        }).toList(),
+                      ),
+                    ),
+                    // Rating Tab
+                    SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Obx(() => ElevatedButton(
+                            onPressed: () => controller.setSortBy('highest'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: controller.sortBy.value == 'highest' 
+                                  ? const Color(0xFFE9A6A6) 
+                                  : const Color(0xFF3D3B54),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              'Highest Rating',
+                              style: GoogleFonts.openSans(
+                                color: controller.sortBy.value == 'highest'
+                                    ? const Color(0xFF1F1D36)
+                                    : Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          )),
+                          const SizedBox(height: 12),
+                          Obx(() => ElevatedButton(
+                            onPressed: () => controller.setSortBy('lowest'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: controller.sortBy.value == 'lowest'
+                                  ? const Color(0xFFE9A6A6)
+                                  : const Color(0xFF3D3B54),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              'Lowest Rating',
+                              style: GoogleFonts.openSans(
+                                color: controller.sortBy.value == 'lowest'
+                                    ? const Color(0xFF1F1D36)
+                                    : Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          )),
+                        ],
+                      ),
+                    ),
+                    // Release Date Tab
+                    SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Obx(() => ElevatedButton(
+                            onPressed: () => controller.setSortBy('newest'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: controller.sortBy.value == 'newest'
+                                  ? const Color(0xFFE9A6A6)
+                                  : const Color(0xFF3D3B54),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              'Newest First',
+                              style: GoogleFonts.openSans(
+                                color: controller.sortBy.value == 'newest'
+                                    ? const Color(0xFF1F1D36)
+                                    : Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          )),
+                          const SizedBox(height: 12),
+                          Obx(() => ElevatedButton(
+                            onPressed: () => controller.setSortBy('oldest'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: controller.sortBy.value == 'oldest'
+                                  ? const Color(0xFFE9A6A6)
+                                  : const Color(0xFF3D3B54),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              'Oldest First',
+                              style: GoogleFonts.openSans(
+                                color: controller.sortBy.value == 'oldest'
+                                    ? const Color(0xFF1F1D36)
+                                    : Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          )),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Clear All Filters Button
               const SizedBox(height: 16),
-              
-              // Sort by Release Date Section
-              FilterSection<Map<String, String>>(
-                title: 'Sort by Release Date',
-                items: const [
-                  {'value': 'newest', 'label': 'Newest First'},
-                  {'value': 'oldest', 'label': 'Oldest First'},
-                ],
-                selectedItems: controller.sortBy.value.isNotEmpty 
-                    ? [{'value': controller.sortBy.value, 'label': controller.sortBy.value == 'newest' ? 'Newest First' : 'Oldest First'}]
-                    : [],
-                onToggle: (item) => controller.setSortBy(item['value']!),
-                onClear: () => controller.setSortBy(''),
-                itemLabelBuilder: (item) => item['label']!,
-                isSingleSelect: true,
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () {
+                    controller.clearGenres();
+                    controller.clearYears();
+                    controller.setSortBy('');
+                  },
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: Text(
+                    'Clear All Filters',
+                    style: GoogleFonts.openSans(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
