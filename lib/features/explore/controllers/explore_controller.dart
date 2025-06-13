@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:letterboxd/core/models/movie.dart';
 import 'package:letterboxd/core/services/tmdb_service.dart';
+import 'package:letterboxd/core/constants/genre_data.dart';
 import 'dart:async';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,8 +28,12 @@ class ExploreController extends GetxController {
   void onInit() {
     super.onInit();
     _initPrefs();
-    _loadGenres();
+    _initializeGenres();
     _initializeYears();
+  }
+
+  void _initializeGenres() {
+    availableGenres.value = GenreData.genres;
   }
 
   void _initializeYears() {
@@ -43,19 +48,6 @@ class ExploreController extends GetxController {
   Future<void> _initPrefs() async {
     _prefs = await SharedPreferences.getInstance();
     loadSearchHistory();
-  }
-
-  Future<void> _loadGenres() async {
-    try {
-      final genres = await TMDBService.getMovieGenres();
-      availableGenres.value = genres;
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load genres: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    }
   }
 
   @override
