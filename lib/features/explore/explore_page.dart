@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:letterboxd/core/widgets/custom_bottom_nav.dart';
+import 'package:letterboxd/core/widgets/filter_section.dart';
 import 'package:letterboxd/features/explore/controllers/explore_controller.dart';
 import 'package:letterboxd/routes/app_routes.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -26,233 +27,61 @@ class ExplorePage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Genre Filter Section
-              ExpansionTile(
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Filter by Genre',
-                      style: GoogleFonts.openSans(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Obx(() => controller.selectedGenres.isNotEmpty
-                      ? TextButton(
-                          onPressed: controller.clearGenres,
-                          child: Text(
-                            'Clear All',
-                            style: GoogleFonts.openSans(
-                              color: Colors.grey[400],
-                              fontSize: 14,
-                            ),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                    ),
-                  ],
-                ),
-                iconColor: Colors.white,
-                collapsedIconColor: Colors.white,
-                shape: const Border(),
-                collapsedShape: const Border(),
-                children: [
-                  Obx(() => Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: controller.availableGenres.map((genre) {
-                      final isSelected = controller.selectedGenres.contains(genre);
-                      return FilterChip(
-                        label: Text(
-                          genre['name'],
-                          style: GoogleFonts.openSans(
-                            color: isSelected ? const Color(0xFF1F1D36) : Colors.grey[400],
-                            fontSize: 14,
-                          ),
-                        ),
-                        selected: isSelected,
-                        onSelected: (selected) => controller.toggleGenre(genre),
-                        backgroundColor: const Color(0xFF3D3B54),
-                        selectedColor: const Color(0xFFE9A6A6),
-                        checkmarkColor: const Color(0xFF1F1D36),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      );
-                    }).toList(),
-                  )),
-                ],
+              FilterSection<Map<String, dynamic>>(
+                title: 'Filter by Genre',
+                items: controller.availableGenres,
+                selectedItems: controller.selectedGenres,
+                onToggle: controller.toggleGenre,
+                onClear: controller.clearGenres,
+                itemLabelBuilder: (genre) => genre['name'],
               ),
               
               const SizedBox(height: 16),
               
               // Year Filter Section
-              ExpansionTile(
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Filter by Year',
-                      style: GoogleFonts.openSans(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Obx(() => controller.selectedYears.isNotEmpty
-                      ? TextButton(
-                          onPressed: controller.clearYears,
-                          child: Text(
-                            'Clear All',
-                            style: GoogleFonts.openSans(
-                              color: Colors.grey[400],
-                              fontSize: 14,
-                            ),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                    ),
-                  ],
-                ),
-                iconColor: Colors.white,
-                collapsedIconColor: Colors.white,
-                shape: const Border(),
-                collapsedShape: const Border(),
-                children: [
-                  Obx(() => Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: controller.availableYears.map((year) {
-                      final isSelected = controller.selectedYears.contains(year);
-                      return FilterChip(
-                        label: Text(
-                          year.toString(),
-                          style: GoogleFonts.openSans(
-                            color: isSelected ? const Color(0xFF1F1D36) : Colors.grey[400],
-                            fontSize: 14,
-                          ),
-                        ),
-                        selected: isSelected,
-                        onSelected: (selected) => controller.toggleYear(year),
-                        backgroundColor: const Color(0xFF3D3B54),
-                        selectedColor: const Color(0xFFE9A6A6),
-                        checkmarkColor: const Color(0xFF1F1D36),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      );
-                    }).toList(),
-                  )),
-                ],
+              FilterSection<int>(
+                title: 'Filter by Year',
+                items: controller.availableYears,
+                selectedItems: controller.selectedYears,
+                onToggle: controller.toggleYear,
+                onClear: controller.clearYears,
+                itemLabelBuilder: (year) => year.toString(),
               ),
               
               const SizedBox(height: 16),
               
               // Sort by Rating Section
-              ExpansionTile(
-                title: Text(
-                  'Sort by Rating',
-                  style: GoogleFonts.openSans(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                iconColor: Colors.white,
-                collapsedIconColor: Colors.white,
-                shape: const Border(),
-                collapsedShape: const Border(),
-                children: [
-                  Obx(() => Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      FilterChip(
-                        label: Text(
-                          'Highest Rating',
-                          style: GoogleFonts.openSans(
-                            color: controller.sortBy.value == 'highest' ? const Color(0xFF1F1D36) : Colors.grey[400],
-                            fontSize: 14,
-                          ),
-                        ),
-                        selected: controller.sortBy.value == 'highest',
-                        onSelected: (selected) => controller.setSortBy('highest'),
-                        backgroundColor: const Color(0xFF3D3B54),
-                        selectedColor: const Color(0xFFE9A6A6),
-                        checkmarkColor: const Color(0xFF1F1D36),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
-                      FilterChip(
-                        label: Text(
-                          'Lowest Rating',
-                          style: GoogleFonts.openSans(
-                            color: controller.sortBy.value == 'lowest' ? const Color(0xFF1F1D36) : Colors.grey[400],
-                            fontSize: 14,
-                          ),
-                        ),
-                        selected: controller.sortBy.value == 'lowest',
-                        onSelected: (selected) => controller.setSortBy('lowest'),
-                        backgroundColor: const Color(0xFF3D3B54),
-                        selectedColor: const Color(0xFFE9A6A6),
-                        checkmarkColor: const Color(0xFF1F1D36),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
-                    ],
-                  )),
+              FilterSection<Map<String, String>>(
+                title: 'Sort by Rating',
+                items: const [
+                  {'value': 'highest', 'label': 'Highest Rating'},
+                  {'value': 'lowest', 'label': 'Lowest Rating'},
                 ],
+                selectedItems: controller.sortBy.value.isNotEmpty 
+                    ? [{'value': controller.sortBy.value, 'label': controller.sortBy.value == 'highest' ? 'Highest Rating' : 'Lowest Rating'}]
+                    : [],
+                onToggle: (item) => controller.setSortBy(item['value']!),
+                onClear: () => controller.setSortBy(''),
+                itemLabelBuilder: (item) => item['label']!,
+                isSingleSelect: true,
               ),
-
+              
               const SizedBox(height: 16),
               
               // Sort by Release Date Section
-              ExpansionTile(
-                title: Text(
-                  'Sort by Release Date',
-                  style: GoogleFonts.openSans(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                iconColor: Colors.white,
-                collapsedIconColor: Colors.white,
-                shape: const Border(),
-                collapsedShape: const Border(),
-                children: [
-                  Obx(() => Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      FilterChip(
-                        label: Text(
-                          'Newest First',
-                          style: GoogleFonts.openSans(
-                            color: controller.sortBy.value == 'newest' ? const Color(0xFF1F1D36) : Colors.grey[400],
-                            fontSize: 14,
-                          ),
-                        ),
-                        selected: controller.sortBy.value == 'newest',
-                        onSelected: (selected) => controller.setSortBy('newest'),
-                        backgroundColor: const Color(0xFF3D3B54),
-                        selectedColor: const Color(0xFFE9A6A6),
-                        checkmarkColor: const Color(0xFF1F1D36),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
-                      FilterChip(
-                        label: Text(
-                          'Oldest First',
-                          style: GoogleFonts.openSans(
-                            color: controller.sortBy.value == 'oldest' ? const Color(0xFF1F1D36) : Colors.grey[400],
-                            fontSize: 14,
-                          ),
-                        ),
-                        selected: controller.sortBy.value == 'oldest',
-                        onSelected: (selected) => controller.setSortBy('oldest'),
-                        backgroundColor: const Color(0xFF3D3B54),
-                        selectedColor: const Color(0xFFE9A6A6),
-                        checkmarkColor: const Color(0xFF1F1D36),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
-                    ],
-                  )),
+              FilterSection<Map<String, String>>(
+                title: 'Sort by Release Date',
+                items: const [
+                  {'value': 'newest', 'label': 'Newest First'},
+                  {'value': 'oldest', 'label': 'Oldest First'},
                 ],
+                selectedItems: controller.sortBy.value.isNotEmpty 
+                    ? [{'value': controller.sortBy.value, 'label': controller.sortBy.value == 'newest' ? 'Newest First' : 'Oldest First'}]
+                    : [],
+                onToggle: (item) => controller.setSortBy(item['value']!),
+                onClear: () => controller.setSortBy(''),
+                itemLabelBuilder: (item) => item['label']!,
+                isSingleSelect: true,
               ),
             ],
           ),
